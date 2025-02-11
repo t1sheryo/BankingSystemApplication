@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Transactions List</title>
+</head>
+<body>
+<h1>List of Transactions</h1>
+
+<table>
+    <thead>
+    <tr>
+        <th>Account ID From</th>
+        <th>Account ID To</th>
+        <th>Currency</th>
+        <th>Category</th>
+        <th>Amount</th>
+        <th>Transaction Time</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="transaction : ${transactionList}">
+        <td th:text="${transaction.accountIdFrom}"></td>
+        <td th:text="${transaction.accountIdTo}"></td>
+        <td th:text="${transaction.currency}"></td>
+        <td th:text="${transaction.category}"></td>
+        <td th:text="${transaction.amount}"></td>
+        <td th:text="${transaction.transactionTime}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<!--<form th:action="@{/bank/transactions}" method="post">-->
+<!--    <button type="submit">Вернуться к форме добавления транзакции</button>-->
+<!--</form>-->
+    <form method="post">
+        <button type="submit">Return to create transaction</button>
+    </form>
+
+</body>
+</html>
