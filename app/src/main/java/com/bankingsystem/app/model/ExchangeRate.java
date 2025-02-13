@@ -4,9 +4,8 @@ import com.bankingsystem.app.enums.Currency;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -15,5 +14,5 @@ public class ExchangeRate {
     private Currency currencyFrom;
     private Currency currencyTo;
     private BigDecimal rate;
-    private Timestamp timestamp;
+    private LocalDateTime timestamp;
 }
