@@ -1,6 +1,7 @@
 package com.bankingsystem.app.services.impl;
 
 import com.bankingsystem.app.enums.Category;
+import com.bankingsystem.app.model.Transaction;
 import com.bankingsystem.app.model.limits.Limit;
 import com.bankingsystem.app.model.limits.LimitRequest;
 import com.bankingsystem.app.model.limits.LimitResponse;
@@ -15,18 +16,19 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
 public class LimitService implements LimitServiceInterface {
-    private HashMap<Long, List<Limit>> clientsLimits;
+    private HashMap<Long, List<Limit>> clientsLimits;  // {accountId, Limits}
 
     LimitService() {
         clientsLimits = new HashMap<>();
     }
     @Override
     public void setLimit(LimitRequest request) {
-
+        // TODO: implement with db
         try {
             Long accountId = request.getAccountId();
             Category category = request.getCategory();
@@ -37,7 +39,7 @@ public class LimitService implements LimitServiceInterface {
                             ChronoUnit.DAYS.between(LocalDateTime.now(), limit.getLastUpdate()) < 30); // if gap < 30(month)
 
             boolean isDefaultValue = true;
-            Limit reference = null;
+            Limit reference = null;  // if limit has been found
             for (Limit limit : clientsLimits.get(accountId)) {
                 if (limit.getCategory().equals(category)) {
                     reference = limit;
@@ -50,6 +52,14 @@ public class LimitService implements LimitServiceInterface {
                 return ;
             }
 
+            BigDecimal diff = request.getLimit().subtract(reference.getLimit());
+            reference.setRemaining(reference.getRemaining().add(diff));
+            if(reference.getRemaining().compareTo(BigDecimal.ZERO) == -1) {
+                reference.setLimitExceeded(true);
+            }
+            else{
+                reference.setLimitExceeded(false);
+            }
             reference.setLimit(lim);
             reference.setLastUpdate(LocalDateTime.now());
             reference.setIsDefault(false);
@@ -98,5 +108,21 @@ public class LimitService implements LimitServiceInterface {
         }
 
         return responses;
+    }
+
+    @Override
+    public void updateRemainder(Transaction transaction) {
+        // invoking this method after we add transaction to update remainder
+        Long accountId = transaction.getAccountIdTo();
+        Category category = transaction.getCategory();
+        Optional<Limit> limitOptional = clientsLimits.get(accountId).stream()
+                .filter(limitElem -> category.equals(limitElem.getCategory()))
+                .findFirst();
+        limitOptional.ifPresent(limit -> {
+            limit.setRemaining(limit.getRemaining().subtract(transaction.getAmount()));
+            if(limit.getRemaining().compareTo(BigDecimal.ZERO) == - 1) {
+                limit.setLimitExceeded(true);
+            }
+        });
     }
 }

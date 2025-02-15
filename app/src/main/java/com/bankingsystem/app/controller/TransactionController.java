@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.Errors;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +22,8 @@ import com.bankingsystem.app.enums.Currency;
 @RequestMapping("/bank")
 @SessionAttributes("transactionList")
 public class TransactionController {
+
+
 
     @ModelAttribute
     public void addCategories(Model model) {
@@ -39,12 +42,12 @@ public class TransactionController {
     @ModelAttribute
     public void addExchangeRates(Model model) {
         List<ExchangeRate> exchangeRates = Arrays.asList(
-                new ExchangeRate(Currency.RUB, Currency.USD, new BigDecimal("0.0104"), Timestamp.valueOf("2024-02-11 20:36:00")),
-                new ExchangeRate(Currency.USD, Currency.RUB, new BigDecimal("97.8291"), Timestamp.valueOf("2024-02-11 10:36:25")),
-                new ExchangeRate(Currency.RUB, Currency.EUR, new BigDecimal("0.0099"), Timestamp.valueOf("2024-02-11 05:40:27")),
-                new ExchangeRate(Currency.EUR, Currency.RUB, new BigDecimal("101.0222"), Timestamp.valueOf("2025-02-11 15:30:00")),
-                new ExchangeRate(Currency.USD, Currency.EUR, new BigDecimal("0.9684"), Timestamp.valueOf("2024-12-01 15:30:00")),
-                new ExchangeRate(Currency.EUR, Currency.USD, new BigDecimal("1.0326"), Timestamp.valueOf("2012-02-01 17:30:50"))
+                new ExchangeRate(Currency.RUB, Currency.USD, new BigDecimal("0.0104"), LocalDateTime.of(2024, 10, 20, 15, 20)),
+                new ExchangeRate(Currency.USD, Currency.RUB, new BigDecimal("97.8291"), LocalDateTime.of(2024, 10, 20, 15, 20)),
+                new ExchangeRate(Currency.RUB, Currency.EUR, new BigDecimal("0.0099"), LocalDateTime.of(2024, 10, 20, 15, 20)),
+                new ExchangeRate(Currency.EUR, Currency.RUB, new BigDecimal("101.0222"), LocalDateTime.of(2024, 10, 20, 15, 20)),
+                new ExchangeRate(Currency.USD, Currency.EUR, new BigDecimal("0.9684"), LocalDateTime.of(2024, 10, 20, 15, 20)),
+                new ExchangeRate(Currency.EUR, Currency.USD, new BigDecimal("1.0326"), LocalDateTime.of(2024, 10, 20, 15, 20))
         );
 
         model.addAttribute("exchangeRates", exchangeRates);
@@ -83,7 +86,7 @@ public class TransactionController {
     }
 
     @PostMapping("/transactions")
-    public String returnToAddTransaction(){
+    public String returnToAddTransactionPage(){ // return from transaction show form to add transaction
         return "redirect:/bank";
     }
 

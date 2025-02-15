@@ -17,4 +17,6 @@ public class Limit {
     private LocalDateTime createdAt;
     private LocalDateTime lastUpdate;
     private Boolean isDefault;
+    private Boolean limitExceeded;
+    private BigDecimal remaining;
 }
