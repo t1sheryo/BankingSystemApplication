@@ -1,6 +1,8 @@
 package com.bankingsystem.app.model;
 
 import com.bankingsystem.app.enums.Category;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,6 +12,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+
 
 @Data
 @AllArgsConstructor
