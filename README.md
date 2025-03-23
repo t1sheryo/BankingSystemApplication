@@ -20,8 +20,7 @@
 3) Создать сеть для контейнеров в docker (опционально):  
 `docker network create <название_сети>`
 
-`!` Чтобы просмотреть список активных сетей:  
-`docker network ls`
+`!` Чтобы просмотреть список активных сетей:  `docker network ls`
 
 5) Создать и запустить контейнер:  
 `docker run -d --name <имя_контейнера> -p 3306:3306 -e MYSQL_ROOT_PASSWORD=<пароль_для_суперпользователя> -e MYSQL_DATABASE=<название_БД> -e MYSQL_USER=user -e MYSQL_PASSWORD=<пароль_для_пользователя> -v mysql-data:/var/lib/mysql mysql:8.0`
