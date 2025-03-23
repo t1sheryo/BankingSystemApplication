@@ -2,7 +2,7 @@ package com.bankingsystem.app.controller;
 
 import com.bankingsystem.app.enums.Category;
 import com.bankingsystem.app.model.ExchangeRate;
-import com.bankingsystem.app.model.Transaction;
+import com.bankingsystem.app.model.TransactionDTO;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -10,7 +10,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.Errors;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,13 +51,13 @@ public class TransactionController {
     }
 
     @ModelAttribute(name = "transactionList")
-    public List<Transaction> listTransactions() {
-        return new ArrayList<Transaction>();
+    public List<TransactionDTO> listTransactions() {
+        return new ArrayList<TransactionDTO>();
     }
 
     @ModelAttribute(name = "transaction")
-    public Transaction transaction(){
-        return new Transaction();
+    public TransactionDTO transaction(){
+        return new TransactionDTO();
     }
 
     @GetMapping
@@ -67,9 +66,9 @@ public class TransactionController {
     }
 
     @PostMapping
-    public String addTransaction(@Valid @ModelAttribute Transaction transaction,
+    public String addTransaction(@Valid @ModelAttribute TransactionDTO transaction,
                                Errors errors,
-                               @ModelAttribute List<Transaction> transactionList) {
+                               @ModelAttribute List<TransactionDTO> transactionList) {
         if(errors.hasErrors()) {
             return "addFormPage";
         }

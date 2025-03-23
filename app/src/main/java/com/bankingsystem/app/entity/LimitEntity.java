@@ -21,7 +21,7 @@ public class LimitEntity {
     private Long id;
 
     @NotNull
-    @Column(name = "limit_sum")
+    @Column(name = "limit_sum") // сумма установленного лимита
     private BigDecimal limitSum;
 
     @NotNull
@@ -36,6 +36,10 @@ public class LimitEntity {
     @NotNull
     @Column(name = "limit_currency_shortname")
     private Currency limitCurrencyShortName;
+
+    @NotNull
+    @Column(name = "limit_remainder")
+    private BigDecimal limitRemainder;
 
     @NotNull
     @Column(name = "account_id")
