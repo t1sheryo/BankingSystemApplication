@@ -23,8 +23,6 @@ import com.bankingsystem.app.enums.Currency;
 @SessionAttributes("transactionList")
 public class TransactionController {
 
-
-
     @ModelAttribute
     public void addCategories(Model model) {
         List<Category> categories = Arrays.asList(Category.values());

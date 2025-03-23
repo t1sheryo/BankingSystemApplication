@@ -104,6 +104,7 @@ public class LimitService implements LimitServiceInterface {
                         limit.getLastUpdate(),
                         new BigDecimal("0")  // TODO: need to calculate this variable using TransactionService
                 );
+                responses.add(response);
             }
         }
 
@@ -111,8 +112,8 @@ public class LimitService implements LimitServiceInterface {
     }
 
     @Override
+    // invoking this method after we add transaction to update remainder
     public void updateRemainder(Transaction transaction) {
-        // invoking this method after we add transaction to update remainder
         Long accountId = transaction.getAccountIdTo();
         Category category = transaction.getCategory();
         Optional<Limit> limitOptional = clientsLimits.get(accountId).stream()
