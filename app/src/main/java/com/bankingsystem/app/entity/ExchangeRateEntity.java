@@ -8,8 +8,7 @@ import jakarta.persistence.Table;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
-// TODO: добавить в V1__init_tables.sql создание таблицы "exchange_rates"
+import java.time.OffsetDateTime;
 
 @Entity
 @Setter
@@ -26,7 +25,7 @@ public class ExchangeRateEntity {
     private BigDecimal rate;
 
     @Column(name = "update_time", nullable = false)
-    private LocalDateTime timestamp;
+    private OffsetDateTime updateTime;
 
     // Вспомогательные методы для удобства работы с полями ключа
     // Необходимо делать проверку id == null, т.к.

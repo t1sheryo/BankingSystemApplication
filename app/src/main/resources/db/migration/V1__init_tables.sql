@@ -19,3 +19,11 @@ CREATE TABLE transactions (
     limit_id BIGINT NOT NULL,
     FOREIGN KEY (limit_id) REFERENCES limits(id)
 );
+
+CREATE TABLE  exchange_rates(
+    currency_from VARCHAR(10) NOT NULL,
+    currency_to VARCHAR(10) NOT NULL,
+    rate DECIMAL(15,2) NOT NULL,
+    update_time TIMESTAMP NOT NULL,
+    PRIMARY KEY (currency_from,currency_to)
+);

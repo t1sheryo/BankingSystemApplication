@@ -43,5 +43,4 @@ public class LimitEntity {
     @NotNull
     @Column(name = "account_id")
     private Long accountId;
-
 }

@@ -1,87 +1,69 @@
 package com.bankingsystem.app.controller;
 
+import com.bankingsystem.app.entity.TransactionEntity;
 import com.bankingsystem.app.enums.Category;
 import com.bankingsystem.app.model.TransactionDTO;
+import com.bankingsystem.app.services.impl.TransactionService;
+import com.bankingsystem.app.services.interfaces.TransactionServiceInterface;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.validation.Errors;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.List;
 import com.bankingsystem.app.enums.Currency;
 
-// FIXME: по хорошему пересмотреть вариант с добавлением
-// атрибутов в sessionattributes.
-// Можно это реализовать как-нибудь по другому
-
-// FIXME: можно переписать этот класс с учетом обновлений
+// TODO
 @Slf4j
-@Controller
+@RestController
 @RequestMapping("/bank")
-@SessionAttributes("transactionList")
 public class TransactionController {
 
-    @ModelAttribute
-    public void addCategories(Model model) {
-        List<Category> categories = Arrays.asList(Category.values());
+    private final TransactionServiceInterface transactionService;
+    // Выносим все справочные данные как константы
+    private static final List<Category> categories = Arrays.asList(Category.values());
+    private static final List<Currency> currencies = Arrays.asList(Currency.values());
 
-        model.addAttribute("categories", categories);
-    }
-
-    @ModelAttribute
-    public void addCurrencies(Model model) {
-        List<Currency> currencies = Arrays.asList(Currency.values());
-
-        model.addAttribute("currencies", currencies);
-    }
-
-    @ModelAttribute
-    public void addExchangeRates(Model model) {
-        // FIXME: тут должны быть все курсы переводов валют
-
-        //model.addAttribute("exchangeRates", exchangeRates);
-    }
-
-    @ModelAttribute(name = "transactionList")
-    public List<TransactionDTO> listTransactions() {
-        return new ArrayList<TransactionDTO>();
-    }
-
-    @ModelAttribute(name = "transaction")
-    public TransactionDTO transaction(){
-        return new TransactionDTO();
-    }
-
-    @GetMapping
-    public String showAddForm(){
-        return "addFormPage";
+    TransactionController(TransactionServiceInterface transactionService) {
+        this.transactionService = transactionService;
     }
 
     @PostMapping
-    public String addTransaction(@Valid @ModelAttribute TransactionDTO transaction,
-                               Errors errors,
-                               @ModelAttribute List<TransactionDTO> transactionList) {
-        if(errors.hasErrors()) {
-            return "addFormPage";
-        }
-        transactionList.add(transaction);
-        log.info("Transaction added: {}" + transaction);
-        return "redirect:/bank/transactions";
+    public ResponseEntity<TransactionEntity> createTransaction(@Valid @RequestBody TransactionDTO transactionDTO)
+    {
+        log.info("create Transaction for DTO: {}", transactionDTO);
+        TransactionEntity transaction= transactionService.createTransaction(transactionDTO);
+        // Возвращаем полный ответ со статусом
+        // - Статус-кодом 201 Created (для создания ресурса).
+        // - Заголовком Location, указывающим URL новой транзакции.
+        // - Телом ответа, содержащим созданный объект TransactionEntity.
+        return ResponseEntity
+                 .status(HttpStatus.CREATED)
+                 .header("Location", "/bank" + transaction.getId())
+                 .body(transaction);
     }
 
-    @GetMapping("/transactions")
-    public String getTransactions(){
-        return "listOfTransactionsPage";
+    @GetMapping
+    public ResponseEntity<List<TransactionDTO>> getAllTransactions(){
+        return ResponseEntity.ok(transactionService.getAllTransactions());
     }
 
-    @PostMapping("/transactions")
-    public String returnToAddTransactionPage(){ // return from transaction show form to add transaction
-        return "redirect:/bank";
+    @GetMapping("/{id}")
+    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountId(@PathVariable Long id){
+        return ResponseEntity.ok(transactionService.getTransactionsByAccountId(id));
     }
 
+    @GetMapping("/{category}")
+    public ResponseEntity<List<TransactionDTO>> getTransactionsByCategory(@PathVariable Category category){
+        return ResponseEntity.ok(transactionService.getTransactionsByCategory(category));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountIdWhichExceedLimit(@PathVariable Long id){
+        return ResponseEntity.ok(transactionService.getTransactionsByAccountIdWhichExceedLimit(id));
+    }
 }

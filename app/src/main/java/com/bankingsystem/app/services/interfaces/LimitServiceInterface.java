@@ -7,7 +7,7 @@ import com.bankingsystem.app.model.limits.LimitResponse;
 import java.util.List;
 
 public interface LimitServiceInterface {
-    void setLimit(LimitRequest limit);
+    LimitEntity setLimit(LimitRequest limit);
     List<LimitResponse> getLimitsByAccountId(Long accountId);
     LimitEntity getLimitByDBId(Long DBId);
     List<LimitResponse> getAllLimits();
