@@ -6,9 +6,10 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+// TODO: добавить в V1__init_tables.sql создание таблицы "exchange_rates"
 
 @Entity
 @Setter

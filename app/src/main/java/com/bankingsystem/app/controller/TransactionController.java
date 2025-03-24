@@ -1,7 +1,6 @@
 package com.bankingsystem.app.controller;
 
 import com.bankingsystem.app.enums.Category;
-import com.bankingsystem.app.model.ExchangeRate;
 import com.bankingsystem.app.model.TransactionDTO;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +15,11 @@ import java.util.Arrays;
 import java.util.List;
 import com.bankingsystem.app.enums.Currency;
 
+// FIXME: по хорошему пересмотреть вариант с добавлением
+// атрибутов в sessionattributes.
+// Можно это реализовать как-нибудь по другому
+
+// FIXME: можно переписать этот класс с учетом обновлений
 @Slf4j
 @Controller
 @RequestMapping("/bank")
@@ -38,16 +42,9 @@ public class TransactionController {
 
     @ModelAttribute
     public void addExchangeRates(Model model) {
-        List<ExchangeRate> exchangeRates = Arrays.asList(
-                new ExchangeRate(Currency.RUB, Currency.USD, new BigDecimal("0.0104"), LocalDateTime.of(2024, 10, 20, 15, 20)),
-                new ExchangeRate(Currency.USD, Currency.RUB, new BigDecimal("97.8291"), LocalDateTime.of(2024, 10, 20, 15, 20)),
-                new ExchangeRate(Currency.RUB, Currency.EUR, new BigDecimal("0.0099"), LocalDateTime.of(2024, 10, 20, 15, 20)),
-                new ExchangeRate(Currency.EUR, Currency.RUB, new BigDecimal("101.0222"), LocalDateTime.of(2024, 10, 20, 15, 20)),
-                new ExchangeRate(Currency.USD, Currency.EUR, new BigDecimal("0.9684"), LocalDateTime.of(2024, 10, 20, 15, 20)),
-                new ExchangeRate(Currency.EUR, Currency.USD, new BigDecimal("1.0326"), LocalDateTime.of(2024, 10, 20, 15, 20))
-        );
+        // FIXME: тут должны быть все курсы переводов валют
 
-        model.addAttribute("exchangeRates", exchangeRates);
+        //model.addAttribute("exchangeRates", exchangeRates);
     }
 
     @ModelAttribute(name = "transactionList")

@@ -7,12 +7,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import com.bankingsystem.app.enums.Currency;
-
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
-//DTO(Data Transfer Object) класс необходимый для передачи данных между слоями приложения
+// DTO(Data Transfer Object) класс необходимый для передачи данных между слоями приложения
 // в нашем случае между сервисом и контроллером чтобы туда попадали только нужные поля с сущности
 @Data
 @AllArgsConstructor

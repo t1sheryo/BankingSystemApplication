@@ -5,7 +5,6 @@ import com.bankingsystem.app.enums.Currency;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
