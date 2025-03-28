@@ -7,6 +7,8 @@ import com.bankingsystem.app.enums.Currency;
 import com.bankingsystem.app.model.ExchangeRateDTO;
 import com.bankingsystem.app.repository.ExchangeRateRepository;
 import com.bankingsystem.app.services.interfaces.ExchangeRateServiceInterface;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -80,48 +82,51 @@ public class ExchangeRateService implements ExchangeRateServiceInterface {
 
     @Override
     public ExchangeRateEntity updateExchangeRateManually(Currency currencyFrom, Currency currencyTo) {
-        log.info("Method called for {}/{}", currencyFrom, currencyTo);
+    log.info("Updating exchange rate manually for {}/{}", currencyFrom, currencyTo);
 
+    try {
+        // Формируем URL запроса
         String url = String.format("%s/exchange_rate?symbol=%s/%s&apikey=%s",
-            twelveDataConfig.getApiUrl(), currencyFrom, currencyTo, twelveDataConfig.getApiKey());
+                twelveDataConfig.getApiUrl(), currencyFrom, currencyTo, twelveDataConfig.getApiKey());
 
-        // этот класс сделан для упрощения работы с десериализацией данных
-        // т.к. RestTemplate ожидает, что обьект JSON будет преобразован
-        // в обьект существующего класса. Иначе, будет требоваться вручную
-        // парсить данные ответа.
-        try {
-        log.debug("Requesting URL: {}", url);
+        log.debug("Making request to URL: {}", url);
+
+        // Делаем запрос и автоматически преобразуем JSON в DTO
         ExchangeRateDTO response = restTemplate.getForObject(url, ExchangeRateDTO.class);
-        log.debug("API Response: {}", response);
-        } catch (RestClientException e) {
-            log.error("REST call failed: ", e);  // <- Логируем ошибку
-            throw e;
+
+        // Проверяем ответ
+        if (response == null) {
+            throw new RuntimeException("Empty response from API");
         }
-//        if(response == null || response.getValue() == null) {
-//            throw new RuntimeException("Failed to fetch exchange rate from Twelve Data API");
-//        }
 
-        BigDecimal rate = new BigDecimal(response.getValue());
+        log.debug("Received rate: {}", response.getRate());
+
+        // Получаем курс (используем value если есть, иначе rate)
+        BigDecimal rate = BigDecimal.valueOf(response.getRate());
+
+        // Создаем или обновляем запись в БД
         LocalDate today = LocalDate.now();
-        ExchangeRateCompositePrimaryKey primaryKey
-                = new ExchangeRateCompositePrimaryKey(currencyFrom, currencyTo);
+        ExchangeRateEntity entity = exchangeRateRepository
+                .findByIdAndRateDate(
+                    new ExchangeRateCompositePrimaryKey(currencyFrom, currencyTo),
+                    today)
+                .orElseGet(ExchangeRateEntity::new);
 
-        // если запись существует в БД, то корректируем ее
-        // иначе создаем новую запись
-        Optional<ExchangeRateEntity> existingRate
-                = exchangeRateRepository.findByIdAndRateDate(primaryKey, today);
-        ExchangeRateEntity entity = existingRate.orElse(new ExchangeRateEntity());
-        // поле updateTime не трогаем, т.к. оно обновляется через методы
-        // с аннотацией @PreUpdate и @PrePersist
-        entity.setId(primaryKey);
+        entity.setId(new ExchangeRateCompositePrimaryKey(currencyFrom, currencyTo));
         entity.setRateDate(today);
         entity.setRate(rate);
 
-        // если в БД существовала эта запись, тогда
-        // некоторые поля просто перезапишутся.
-        // если же такой записи не было, тогда добавиться новая
         return exchangeRateRepository.save(entity);
+
+    } catch (RestClientException e) {
+        log.error("API request failed for {}/{}: {}", currencyFrom, currencyTo, e.getMessage());
+        throw new RuntimeException("Failed to get exchange rate from API", e);
+    } catch (Exception e) {
+        log.error("Unexpected error in updateExchangeRateManually for {}/{}: {}",
+                currencyFrom, currencyTo, e.getMessage());
+        throw new RuntimeException("Exchange rate update failed", e);
     }
+}
 
     // автоматическое обновление курсов раз в указанную единицу времени
     @Scheduled(fixedRate = FIXED_UPDATE_RATE_TIME)
