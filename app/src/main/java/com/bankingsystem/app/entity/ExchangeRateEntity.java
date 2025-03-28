@@ -12,19 +12,19 @@ import java.time.OffsetDateTime;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-//uniqueConstraints добавляет ограничение уникальности для столбцов
-//currency_from", "currency_to","rate_date
-//имя uq_currency_from_to_date на которое мы ссылаемся в базе данных
-//анотация гарантирует что в бд не будет двух записей с одинаковыми значениями currency_from", "currency_to","rate_date
-//эти столбцы будут уникальны
+// uniqueConstraints добавляет ограничение уникальности для столбцов
+// currency_from", "currency_to","rate_date
+// имя uq_currency_from_to_date на которое мы ссылаемся в базе данных
+// аннотация гарантирует что в бд не будет двух записей с одинаковыми значениями currency_from", "currency_to","rate_date"
+// эти столбцы будут уникальны
 @Table(name = "exchange_rates", uniqueConstraints = @UniqueConstraint(name = "uq_currency_from_to_date",
         columnNames = {"currency_from", "currency_to","rate_date"})) // задает имя таблицы в бд
 public class ExchangeRateEntity {
     @EmbeddedId // указывает, что первичный ключ является составным
     // в классе ExchangeRateCompositePrimaryKey сокрыты поля currencyFrom и currencyTo
     private ExchangeRateCompositePrimaryKey id;
-
-    @Column(name = "rate", nullable = false)
+    //добавил precision 19 и scale 6 для явного указания размера в бд
+    @Column(name = "rate", nullable = false, precision = 19, scale = 6)
     private BigDecimal rate;
 
     // Хранит дату YY:MM:DD. Для каждого дня создаем новую запись в таблице
