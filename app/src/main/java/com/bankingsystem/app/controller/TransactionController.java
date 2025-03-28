@@ -52,18 +52,30 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getAllTransactions());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountId(@PathVariable Long id){
-        return ResponseEntity.ok(transactionService.getTransactionsByAccountId(id));
-    }
-
     @GetMapping("/{category}")
     public ResponseEntity<List<TransactionDTO>> getTransactionsByCategory(@PathVariable Category category){
         return ResponseEntity.ok(transactionService.getTransactionsByCategory(category));
     }
 
+//    @GetMapping("/{id}")
+//    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountId(@PathVariable Long id){
+//        return ResponseEntity.ok(transactionService.getTransactionsByAccountId(id));
+//    }
+//
+//    @GetMapping("/{id}")
+//    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountIdWhichExceedLimit(@PathVariable Long id){
+//        return ResponseEntity.ok(transactionService.getTransactionsByAccountIdWhichExceedLimit(id));
+//    }
+
+
     @GetMapping("/{id}")
-    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountIdWhichExceedLimit(@PathVariable Long id){
-        return ResponseEntity.ok(transactionService.getTransactionsByAccountIdWhichExceedLimit(id));
+    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountId(
+        @PathVariable Long id,
+        @RequestParam(required = false) Boolean exceededOnly) {
+
+        if (Boolean.TRUE.equals(exceededOnly)) {
+            return ResponseEntity.ok(transactionService.getTransactionsByAccountIdWhichExceedLimit(id));
+        }
+        return ResponseEntity.ok(transactionService.getTransactionsByAccountId(id));
     }
 }
