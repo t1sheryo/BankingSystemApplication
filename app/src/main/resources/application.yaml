@@ -1,4 +1,5 @@
 spring:
+  twelvedata.api-key: f16e683590f6486f9aaf9fee18cd4c51
   datasource:
     url: jdbc:mysql://localhost:3306/banking
     username: user

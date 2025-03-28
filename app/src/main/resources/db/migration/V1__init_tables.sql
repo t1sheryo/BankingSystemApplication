@@ -24,6 +24,8 @@ CREATE TABLE  exchange_rates(
     currency_from VARCHAR(10) NOT NULL,
     currency_to VARCHAR(10) NOT NULL,
     rate DECIMAL(15,2) NOT NULL,
+    rate_date DATE NOT NULL,
     update_time TIMESTAMP NOT NULL,
     PRIMARY KEY (currency_from,currency_to)
+    CONSTRAINT uq_currency_from_to_date UNIQUE (currency_from,currency_to,currency_from, rate_date)
 );

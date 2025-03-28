@@ -1,13 +1,10 @@
 package com.bankingsystem.app.entity;
 
 import com.bankingsystem.app.enums.Currency;
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -15,7 +12,13 @@ import java.time.OffsetDateTime;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "exchange_rates") // задает имя таблицы в бд
+//uniqueConstraints добавляет ограничение уникальности для столбцов
+//currency_from", "currency_to","rate_date
+//имя uq_currency_from_to_date на которое мы ссылаемся в базе данных
+//анотация гарантирует что в бд не будет двух записей с одинаковыми значениями currency_from", "currency_to","rate_date
+//эти столбцы будут уникальны
+@Table(name = "exchange_rates", uniqueConstraints = @UniqueConstraint(name = "uq_currency_from_to_date",
+        columnNames = {"currency_from", "currency_to","rate_date"})) // задает имя таблицы в бд
 public class ExchangeRateEntity {
     @EmbeddedId // указывает, что первичный ключ является составным
     // в классе ExchangeRateCompositePrimaryKey сокрыты поля currencyFrom и currencyTo
@@ -24,8 +27,33 @@ public class ExchangeRateEntity {
     @Column(name = "rate", nullable = false)
     private BigDecimal rate;
 
+    // Хранит дату YY:MM:DD. Для каждого дня создаем новую запись в таблице
+    @Column(name ="rate_date", nullable = false)
+    private LocalDate rateDate;
+
+    // Это поле хранит в себе точное время последнего обновления
+    // в пределах одного дня. Т.е. каждый день будет происходить
+    // обновления курса и его перезапись в таблице
+    // и это поле будет хранить время последней такой перезаписи
     @Column(name = "update_time", nullable = false)
     private OffsetDateTime updateTime;
+
+    //фиксирует время создания записи в бд
+    //выполняется метод INSERT
+    //пример: мы добавили первый курс
+    @PrePersist
+    public void onCreate()
+    {
+        updateTime = OffsetDateTime.now();
+    }
+    //фиксирует время обновления записи в бд
+    //выполняется метод UPDATE
+    //пример: обновление курса
+    @PreUpdate
+    public void onUpdate()
+    {
+        updateTime = OffsetDateTime.now();
+    }
 
     // Вспомогательные методы для удобства работы с полями ключа
     // Необходимо делать проверку id == null, т.к.
@@ -44,7 +72,7 @@ public class ExchangeRateEntity {
 
     public void setCurrencyTo(Currency currencyTo) {
         if(id == null) id = new ExchangeRateCompositePrimaryKey();
-        id.setCurrencyFrom(currencyTo);
+        id.setCurrencyTo(currencyTo);
     }
 
     public Currency getCurrencyTo(){
