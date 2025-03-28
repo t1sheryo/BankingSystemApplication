@@ -4,12 +4,10 @@ import com.bankingsystem.app.entity.LimitEntity;
 import com.bankingsystem.app.entity.TransactionEntity;
 import com.bankingsystem.app.enums.Category;
 import com.bankingsystem.app.model.TransactionDTO;
-import com.bankingsystem.app.repository.LimitRepository;
 import com.bankingsystem.app.repository.TransactionRepository;
 import com.bankingsystem.app.services.interfaces.LimitServiceInterface;
 import com.bankingsystem.app.services.interfaces.TransactionServiceInterface;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.internal.constraintvalidators.hv.AbstractScriptAssertValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
