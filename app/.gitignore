@@ -1,33 +1,84 @@
-HELP.md
+### Maven ###
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/tmp/
+.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar  # Исключение (если нужно сохранить wrapper)
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+### Логи и временные файлы ###
+*.log
+*.tmp
+*.swp
+*.swo
+*.bak
+*.orig
+*~
 
-### IntelliJ IDEA ###
-.idea
-*.iws
+### IDE ###
+# IntelliJ
+.idea/
 *.iml
 *.ipr
+*.iws
+out/
+.idea_modules/
 
-### NetBeans ###
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+.factorypath
+.springBeans
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
+
+# STS (Spring Tool Suite)
+.apt_generated
+.sts4-cache/
+
+### Системные файлы ###
+.DS_Store
+Thumbs.db
+
+### Прочие ###
+# Игнорируем локальные конфиги (если не нужно коммитить)
+application-local.yaml
+application-dev.yaml
+
+# Игнорируем папки сборки (Gradle, если вдруг используется)
+.gradle/
 build/
-!**/src/main/**/build/
+!**/src/main/**/build/  # Исключение (если нужно)
 !**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+# Игнорируем тестовые отчёты
+test-output/
+reports/
+*.jfr
+
+# Docker (опционально)
+docker-compose.yml.override
+**/docker-compose*.yml
+**/.dockerignore
+
+# Frontend (если есть)
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
