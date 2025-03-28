@@ -1,34 +1,49 @@
 package com.bankingsystem.app.model;
 
 import com.bankingsystem.app.enums.Category;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 import com.bankingsystem.app.enums.Currency;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
+// DTO(Data Transfer Object) класс необходимый для передачи данных между слоями приложения
+// в нашем случае между сервисом и контроллером чтобы туда попадали только нужные поля с сущности
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Transaction {
+public class TransactionDTO {
+    @JsonProperty("fromAccount")
     @NotNull(message = "Account Id field must not be null")
     @Positive(message = "Account Id must be positive")
     private Long accountIdFrom;
+
+    @JsonProperty("toAccount")
     @NotNull(message = "Account Id field must not be null")
     @Positive(message = "Account Id must be positive")
     private Long accountIdTo;
+
     @NotNull(message = "Currency field must not be null")
+    @Enumerated(EnumType.STRING)
     private Currency currency;
+
     @NotNull(message = "Category field must not be null")
-    private Category category;
+    @Enumerated(EnumType.STRING)
+    private Category expenseCategory;
+
     @NotNull(message = "Amount field must not be null")
     @DecimalMin(value = "0.001", message = "Transaction value must be over 0.001 unit of currency")
-    private BigDecimal amount;
+    private BigDecimal sum;
+
     @NotNull(message = "Transaction time field must not be null")
     @PastOrPresent(message = "Transaction time must be in the past or present")
-    private LocalDateTime transactionTime;
+    private OffsetDateTime transactionTime;
+
+    @NotNull(message = "Limit ID is required")
+    @Positive()
+    private Long limitId;
+
 }

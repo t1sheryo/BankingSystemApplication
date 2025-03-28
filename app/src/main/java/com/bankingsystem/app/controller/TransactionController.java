@@ -1,91 +1,81 @@
 package com.bankingsystem.app.controller;
 
+import com.bankingsystem.app.entity.TransactionEntity;
 import com.bankingsystem.app.enums.Category;
-import com.bankingsystem.app.model.ExchangeRate;
-import com.bankingsystem.app.model.Transaction;
+import com.bankingsystem.app.model.TransactionDTO;
+import com.bankingsystem.app.services.impl.TransactionService;
+import com.bankingsystem.app.services.interfaces.TransactionServiceInterface;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.validation.Errors;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.List;
 import com.bankingsystem.app.enums.Currency;
 
+// TODO
 @Slf4j
-@Controller
+@RestController
 @RequestMapping("/bank")
-@SessionAttributes("transactionList")
 public class TransactionController {
 
-    @ModelAttribute
-    public void addCategories(Model model) {
-        List<Category> categories = Arrays.asList(Category.values());
+    private final TransactionServiceInterface transactionService;
+    // Выносим все справочные данные как константы
+    private static final List<Category> categories = Arrays.asList(Category.values());
+    private static final List<Currency> currencies = Arrays.asList(Currency.values());
 
-        model.addAttribute("categories", categories);
-    }
-
-    @ModelAttribute
-    public void addCurrencies(Model model) {
-        List<Currency> currencies = Arrays.asList(Currency.values());
-
-        model.addAttribute("currencies", currencies);
-    }
-
-    @ModelAttribute
-    public void addExchangeRates(Model model) {
-        List<ExchangeRate> exchangeRates = Arrays.asList(
-                new ExchangeRate(Currency.RUB, Currency.USD, new BigDecimal("0.0104"), LocalDateTime.of(2024, 10, 20, 15, 20)),
-                new ExchangeRate(Currency.USD, Currency.RUB, new BigDecimal("97.8291"), LocalDateTime.of(2024, 10, 20, 15, 20)),
-                new ExchangeRate(Currency.RUB, Currency.EUR, new BigDecimal("0.0099"), LocalDateTime.of(2024, 10, 20, 15, 20)),
-                new ExchangeRate(Currency.EUR, Currency.RUB, new BigDecimal("101.0222"), LocalDateTime.of(2024, 10, 20, 15, 20)),
-                new ExchangeRate(Currency.USD, Currency.EUR, new BigDecimal("0.9684"), LocalDateTime.of(2024, 10, 20, 15, 20)),
-                new ExchangeRate(Currency.EUR, Currency.USD, new BigDecimal("1.0326"), LocalDateTime.of(2024, 10, 20, 15, 20))
-        );
-
-        model.addAttribute("exchangeRates", exchangeRates);
-    }
-
-    @ModelAttribute(name = "transactionList")
-    public List<Transaction> listTransactions() {
-        return new ArrayList<Transaction>();
-    }
-
-    @ModelAttribute(name = "transaction")
-    public Transaction transaction(){
-        return new Transaction();
-    }
-
-    @GetMapping
-    public String showAddForm(){
-        return "addFormPage";
+    TransactionController(TransactionServiceInterface transactionService) {
+        this.transactionService = transactionService;
     }
 
     @PostMapping
-    public String addTransaction(@Valid @ModelAttribute Transaction transaction,
-                               Errors errors,
-                               @ModelAttribute List<Transaction> transactionList) {
-        if(errors.hasErrors()) {
-            return "addFormPage";
+    public ResponseEntity<TransactionEntity> createTransaction(@Valid @RequestBody TransactionDTO transactionDTO)
+    {
+        log.info("create Transaction for DTO: {}", transactionDTO);
+        TransactionEntity transaction= transactionService.createTransaction(transactionDTO);
+        // Возвращаем полный ответ со статусом
+        // - Статус-кодом 201 Created (для создания ресурса).
+        // - Заголовком Location, указывающим URL новой транзакции.
+        // - Телом ответа, содержащим созданный объект TransactionEntity.
+        return ResponseEntity
+                 .status(HttpStatus.CREATED)
+                 .header("Location", "/bank" + transaction.getId())
+                 .body(transaction);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TransactionDTO>> getAllTransactions(){
+        return ResponseEntity.ok(transactionService.getAllTransactions());
+    }
+
+    @GetMapping("/{category}")
+    public ResponseEntity<List<TransactionDTO>> getTransactionsByCategory(@PathVariable Category category){
+        return ResponseEntity.ok(transactionService.getTransactionsByCategory(category));
+    }
+
+//    @GetMapping("/{id}")
+//    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountId(@PathVariable Long id){
+//        return ResponseEntity.ok(transactionService.getTransactionsByAccountId(id));
+//    }
+//
+//    @GetMapping("/{id}")
+//    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountIdWhichExceedLimit(@PathVariable Long id){
+//        return ResponseEntity.ok(transactionService.getTransactionsByAccountIdWhichExceedLimit(id));
+//    }
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountId(
+        @PathVariable Long id,
+        @RequestParam(required = false) Boolean exceededOnly) {
+
+        if (Boolean.TRUE.equals(exceededOnly)) {
+            return ResponseEntity.ok(transactionService.getTransactionsByAccountIdWhichExceedLimit(id));
         }
-        transactionList.add(transaction);
-        log.info("Transaction added: {}" + transaction);
-        return "redirect:/bank/transactions";
+        return ResponseEntity.ok(transactionService.getTransactionsByAccountId(id));
     }
-
-    @GetMapping("/transactions")
-    public String getTransactions(){
-        return "listOfTransactionsPage";
-    }
-
-    @PostMapping("/transactions")
-    public String returnToAddTransactionPage(){ // return from transaction show form to add transaction
-        return "redirect:/bank";
-    }
-
 }
