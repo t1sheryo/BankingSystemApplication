@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 // значениями из конфигурационного файла
 // prefix = "spring.twelvedata" означает, что Spring будет искать свойства,
 // начинающиеся с spring.twelvedata, и привязывать их к полям класса.
-@ConfigurationProperties(prefix = "spring.twelvedata.api")
+@ConfigurationProperties(prefix = "spring.twelvedata")
 @Getter
 @Setter
 // этот класс предоставляет доступ к внешним данным из .yaml файла,

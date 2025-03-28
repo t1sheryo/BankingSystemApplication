@@ -27,9 +27,6 @@ CREATE TABLE  exchange_rates(
     rate DECIMAL(19,6) NOT NULL,
     rate_date DATE NOT NULL,
     update_time DATETIME NOT NULL,
-    PRIMARY KEY (currency_from,currency_to)
-    CONSTRAINT uq_currency_from_to_date UNIQUE (currency_from,currency_to, rate_date)
+    PRIMARY KEY (currency_from, currency_to),
+    CONSTRAINT uq_currency_from_to_date UNIQUE (currency_from, currency_to, rate_date)
 );
---Нужно это закинуть в файл V2_init
-INSERT INTO limits(id, limit_sum, expense_category, limit_datetime, limit_currency_shortname, limit_remainder, account_id) VALUES
-(1,1000,'PRODUCT','2025-01-01 00:20:00','USD',1000,1),(1,1000,'SERVICE','2025-01-01 00:20:00','USD',1000,1);

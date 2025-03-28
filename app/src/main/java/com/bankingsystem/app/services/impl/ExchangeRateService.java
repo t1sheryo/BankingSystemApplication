@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import com.bankingsystem.app.model.CurrencyPair;
 
@@ -79,17 +80,26 @@ public class ExchangeRateService implements ExchangeRateServiceInterface {
 
     @Override
     public ExchangeRateEntity updateExchangeRateManually(Currency currencyFrom, Currency currencyTo) {
-        String url = String.format("%s/price?symbol=%s/%s&apikey=%s",
-                twelveDataConfig.getApiUrl(), currencyFrom, currencyTo, twelveDataConfig.getApiKey());
+        log.info("Method called for {}/{}", currencyFrom, currencyTo);
+
+        String url = String.format("%s/exchange_rate?symbol=%s/%s&apikey=%s",
+            twelveDataConfig.getApiUrl(), currencyFrom, currencyTo, twelveDataConfig.getApiKey());
 
         // этот класс сделан для упрощения работы с десериализацией данных
         // т.к. RestTemplate ожидает, что обьект JSON будет преобразован
         // в обьект существующего класса. Иначе, будет требоваться вручную
         // парсить данные ответа.
+        try {
+        log.debug("Requesting URL: {}", url);
         ExchangeRateDTO response = restTemplate.getForObject(url, ExchangeRateDTO.class);
-        if(response == null || response.getValue() == null) {
-            throw new RuntimeException("Failed to fetch exchange rate from Twelve Data API");
+        log.debug("API Response: {}", response);
+        } catch (RestClientException e) {
+            log.error("REST call failed: ", e);  // <- Логируем ошибку
+            throw e;
         }
+//        if(response == null || response.getValue() == null) {
+//            throw new RuntimeException("Failed to fetch exchange rate from Twelve Data API");
+//        }
 
         BigDecimal rate = new BigDecimal(response.getValue());
         LocalDate today = LocalDate.now();
@@ -118,11 +128,12 @@ public class ExchangeRateService implements ExchangeRateServiceInterface {
     @Override
     public void updateExchangeRateAutomatically() {
         for (CurrencyPair pair : CURRENCY_PAIRS) {
+            log.info("Processing pair: {}/{}", pair.from(), pair.to());
             try {
                 updateExchangeRateManually(pair.from(), pair.to());
                 log.info("Updated exchange rate for {}/{}", pair.from(), pair.to());
             } catch (Exception e) {
-                log.info("Failed to update exchange rate for {}/{}: {}", pair.from(), pair.to(), e.getMessage());
+                log.error("Failed to update {}/{}: ", pair.from(), pair.to(), e);
             }
         }
     }
