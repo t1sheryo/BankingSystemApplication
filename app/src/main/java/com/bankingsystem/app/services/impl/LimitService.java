@@ -34,8 +34,17 @@ public class LimitService implements LimitServiceInterface {
     }
 
 
-    // FIXME: сделать, чтобы клиент не мог обновлять лимит, когда захочет.
-    //  Сделать ограничение на единицу времени
+    // FIXME:
+    //TODO: 1. Убрать обновление существующего лимита(по тз можно только создавать новые лимиты)
+    // - убрать проверку  if (existingLimit != null) которое обновляет, можно заменить на исключение IllegalStateException
+    // - причина: по тз нельзя обновлять лимиты
+    //TODO: 2. обновить установку limitRemainder равным limitSum при создании нового лимита
+    // - использовать newLimit.setLimitRemainder(limit.getLimit())
+    // - причина: остаток должен быть равен лимиту при инициализации, сейчас этого не происходит
+    //TODO: 3.зафиксировать валюту по дефолту как USD
+    // - использовать: newLimit.setLimitCurrencyShortName(Currency.USD)
+    // - причина: по заданию валюта лимита рассчитывается в USD
+
 
     @Override
     @Transactional
@@ -79,6 +88,7 @@ public class LimitService implements LimitServiceInterface {
             return limitRepository.save(existingLimit);
         }
 
+
         // Если не существует - создаем новый
         LimitEntity newLimit = new LimitEntity();
         newLimit.setAccountId(limit.getAccountId());
@@ -111,6 +121,13 @@ public class LimitService implements LimitServiceInterface {
                 .map(this::convertToLimitResponse)
                 .collect(Collectors.toList());
     }
+    //FIXME: Удалить метод updateRemainder и перенести его логику
+    //TODO: 1.Перенести логику обновления limitRemainder в TransactionService.createTransaction и удалить из текущего класса
+    // причина: обновление остатка должно происходить атомарно с созданием транзакции
+    // (что значит операция пройдет успешно либо откатиться)
+    // сейчас метод в LimitService разделяет операции, что может привести к несогласованности (транзакция создана, а лимит не обновлен)
+    // если мы создаем транзакцию то она должна сразу учитывать ее влияние на лимит
+    // лимит не превышен -- мы открываем транзакцию и меняем значение лимита
 
     @Override
     @Transactional

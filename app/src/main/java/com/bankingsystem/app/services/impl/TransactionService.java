@@ -14,6 +14,22 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+//этот фикс ми написал чатик я не разбирался пока, я спать короче покич
+// FIXME: Исправить логику создания транзакции для соответствия ТЗ
+// TODO: 1. Добавить конвертацию суммы транзакции в USD с использованием ExchangeRateService
+//       - Добавить зависимость ExchangeRateServiceInterface через @Autowired
+//       - Создать метод convertToUsd для получения курса из ExchangeRateService и конвертации суммы
+//       - Причина: по ТЗ лимиты в USD, а транзакции могут быть в любой валюте (KZT, RUB и т.д.), нужно сравнивать в USD
+// TODO: 2. Перенести логику обновления limitRemainder из LimitService.updateRemainder
+//       - Добавить зависимость LimitRepository через @Autowired
+//       - Обновлять limit.setLimitRemainder(limit.getLimitRemainder().subtract(sumInUsd)), если лимит не превышен
+//       - Причина: обновление остатка должно происходить атомарно с созданием транзакции для целостности данных
+// TODO: 3. Сделать метод транзакционным с аннотацией @Transactional
+//       - Добавить @Transactional над методом
+//       - Причина: создание транзакции и обновление лимита должны быть одним атомарным действием
+// TODO: 4. Добавить проверку на null для limit с выбросом исключения
+//       - Использовать if (limit == null) с IllegalArgumentException
+//       - Причина: сейчас при limit == null будет NullPointerException, нужно явное сообщение об ошибке
 
 @Service
 @Slf4j
