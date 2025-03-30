@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// TODO
 @Slf4j
 @RestController
 @RequestMapping("/bank/limits")

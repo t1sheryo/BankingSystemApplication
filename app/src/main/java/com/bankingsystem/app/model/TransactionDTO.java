@@ -38,12 +38,7 @@ public class TransactionDTO {
     @DecimalMin(value = "0.001", message = "Transaction value must be over 0.001 unit of currency")
     private BigDecimal sum;
 
-    @NotNull(message = "Transaction time field must not be null")
-    @PastOrPresent(message = "Transaction time must be in the past or present")
-    private OffsetDateTime transactionTime;
-
     @NotNull(message = "Limit ID is required")
     @Positive()
     private Long limitId;
-
 }

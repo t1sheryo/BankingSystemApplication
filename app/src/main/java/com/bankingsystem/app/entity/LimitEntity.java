@@ -24,8 +24,8 @@ public class LimitEntity {
     private BigDecimal limitSum;
 
     @NotNull
-    @Column(name = "expense_category")
     @Enumerated(EnumType.STRING)
+    @Column(name = "expense_category")
     private Category category;
 
     @NotNull
@@ -33,6 +33,7 @@ public class LimitEntity {
     private OffsetDateTime limitDateTime;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(name = "limit_currency_shortname")
     private Currency limitCurrencyShortName;
 

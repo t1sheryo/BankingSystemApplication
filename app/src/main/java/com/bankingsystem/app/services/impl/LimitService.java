@@ -2,6 +2,7 @@ package com.bankingsystem.app.services.impl;
 
 import com.bankingsystem.app.customExceptions.LimitUpdateNotAllowedException;
 import com.bankingsystem.app.entity.LimitEntity;
+import com.bankingsystem.app.enums.Currency;
 import com.bankingsystem.app.model.TransactionDTO;
 import com.bankingsystem.app.model.limits.LimitRequest;
 import com.bankingsystem.app.model.limits.LimitResponse;
@@ -41,9 +42,6 @@ public class LimitService implements LimitServiceInterface {
     //TODO: 2. обновить установку limitRemainder равным limitSum при создании нового лимита
     // - использовать newLimit.setLimitRemainder(limit.getLimit())
     // - причина: остаток должен быть равен лимиту при инициализации, сейчас этого не происходит
-    //TODO: 3.зафиксировать валюту по дефолту как USD
-    // - использовать: newLimit.setLimitCurrencyShortName(Currency.USD)
-    // - причина: по заданию валюта лимита рассчитывается в USD
 
 
     @Override
@@ -56,34 +54,36 @@ public class LimitService implements LimitServiceInterface {
     public LimitEntity setLimit(LimitRequest limit) {
         OffsetDateTime now = OffsetDateTime.now();
         LimitEntity existingLimit = limitRepository.getLimitByAccountIdAndCategory(limit.getAccountId(), limit.getCategory());
-        OffsetDateTime prevUpdateTime = existingLimit.getLimitDateTime();
 
-        // Подсчитываем сколько времени прошло с момента прошлого обновления лимита
-        long monthsBetween = ChronoUnit.MONTHS.between(
-                prevUpdateTime.truncatedTo(ChronoUnit.DAYS),
-                now.truncatedTo(ChronoUnit.DAYS)
-        );
+        if(existingLimit != null) {
+            OffsetDateTime prevUpdateTime = existingLimit.getLimitDateTime();
+            BigDecimal prevRemainder = existingLimit.getLimitRemainder();
 
-        // Проверяем, превышает ли период 1 месяц
-        if(monthsBetween <= COOLDOWN_PERIOD_TO_SET_NEW_LIMIT_IN_MONTH){
-            // Логирование того, что пользователь слишком рано хочет обновить лимит
-            log.warn("Attempt to update limit too soon. Account: {}, Category: {}, Last update: {}",
-                    limit.getAccountId(),
-                    limit.getCategory(),
-                    existingLimit.getLimitDateTime());
-
-            throw new LimitUpdateNotAllowedException(
-                    String.format("Limit can be updated only once per %d month(s). " +
-                                    "Last update was at %s",
-                            COOLDOWN_PERIOD_TO_SET_NEW_LIMIT_IN_MONTH,
-                            prevUpdateTime.format(DateTimeFormatter.ISO_DATE))
+            // Подсчитываем сколько времени прошло с момента прошлого обновления лимита
+            long monthsBetween = ChronoUnit.MONTHS.between(
+                    prevUpdateTime.truncatedTo(ChronoUnit.DAYS),
+                    now.truncatedTo(ChronoUnit.DAYS)
             );
-        }
 
-        // Если лимит существует - обновляем его
-        if (existingLimit != null) {
+            // Проверяем, превышает ли период 1 месяц
+            if (monthsBetween <= COOLDOWN_PERIOD_TO_SET_NEW_LIMIT_IN_MONTH) {
+                // Логирование того, что пользователь слишком рано хочет обновить лимит
+                log.warn("Attempt to update limit too soon. Account: {}, Category: {}, Last update: {}",
+                        limit.getAccountId(),
+                        limit.getCategory(),
+                        existingLimit.getLimitDateTime());
+
+                throw new LimitUpdateNotAllowedException(
+                        String.format("Limit can be updated only once per %d month(s). " +
+                                        "Last update was at %s",
+                                COOLDOWN_PERIOD_TO_SET_NEW_LIMIT_IN_MONTH,
+                                prevUpdateTime.format(DateTimeFormatter.ISO_DATE))
+                );
+            }
+
+            existingLimit.setLimitRemainder(prevRemainder.add(limit.getLimit().subtract(existingLimit.getLimitSum())));
             existingLimit.setLimitSum(limit.getLimit());
-            existingLimit.setLimitCurrencyShortName(limit.getLimitCurrency());
+            existingLimit.setLimitCurrencyShortName(Currency.USD);
             existingLimit.setLimitDateTime(now);
             return limitRepository.save(existingLimit);
         }
@@ -95,7 +95,8 @@ public class LimitService implements LimitServiceInterface {
         newLimit.setLimitSum(limit.getLimit());
         newLimit.setCategory(limit.getCategory());
         newLimit.setLimitDateTime(now);
-        newLimit.setLimitCurrencyShortName(limit.getLimitCurrency());
+        newLimit.setLimitRemainder(limit.getLimit());
+        newLimit.setLimitCurrencyShortName(Currency.USD);
 
         return limitRepository.save(newLimit);
     }

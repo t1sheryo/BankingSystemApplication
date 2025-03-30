@@ -23,6 +23,6 @@ public class LimitRequest {
     private Category category;
     @NotNull
     //убрал final чтоб пользователь мог выбрать валюту
-    private  Currency limitCurrency = Currency.USD; // пока что всегда в USD
+    private Currency limitCurrency;
     // можно сделать по другому на выбор пользователя например
 }

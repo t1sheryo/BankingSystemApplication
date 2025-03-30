@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,7 +59,7 @@ public class TransactionService implements TransactionServiceInterface {
         transactionEntity.setCurrency(transactionDTO.getCurrency());
         transactionEntity.setSum(transactionDTO.getSum());
         transactionEntity.setCategory(transactionDTO.getExpenseCategory());
-        transactionEntity.setTransactionTime(transactionDTO.getTransactionTime());
+        transactionEntity.setTransactionTime(OffsetDateTime.now());
         transactionEntity.setLimitExceeded(limitExceeded);
         transactionEntity.setLimit(limit);
         return transactionRepository.save(transactionEntity);
@@ -106,7 +107,6 @@ public class TransactionService implements TransactionServiceInterface {
         transactionDTO.setCurrency(transactionEntity.getCurrency());
         transactionDTO.setExpenseCategory(transactionEntity.getCategory());
         transactionDTO.setSum(transactionEntity.getSum());
-        transactionDTO.setTransactionTime(transactionEntity.getTransactionTime());
         transactionDTO.setLimitId(transactionEntity.getLimit().getId());
 
         return transactionDTO;

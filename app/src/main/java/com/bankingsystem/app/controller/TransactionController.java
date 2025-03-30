@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.List;
 import com.bankingsystem.app.enums.Currency;
 
-// TODO
 @Slf4j
 @RestController
 @RequestMapping("/bank")
