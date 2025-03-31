@@ -40,7 +40,8 @@ public class LimitEntity {
     @NotNull
     @Column(name = "limit_remainder")
     private BigDecimal limitRemainder;
-
+    //FIXME:
+    // поменять поле на AccountEntity и добавить @ManyToOne
     @NotNull
     @Column(name = "account_id")
     private Long accountId;

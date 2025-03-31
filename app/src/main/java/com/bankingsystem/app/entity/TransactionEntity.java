@@ -21,7 +21,8 @@ public class TransactionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    //FIXME:
+    // поменять поля на AccountEntity и добавить @ManyToOne
     @NotNull(message = "Account Id field must not be null")
     @Positive(message = "Account Id must be positive")
     @Column(name = "account_from", nullable = false)
@@ -56,6 +57,7 @@ public class TransactionEntity {
     @Column(name = "limit_exceeded", nullable = false)
     private boolean limitExceeded;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "limit_id", nullable = false)
     private LimitEntity limit;

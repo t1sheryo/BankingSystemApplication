@@ -39,7 +39,9 @@ public class LimitService implements LimitServiceInterface {
     //TODO: 1. Убрать обновление существующего лимита(по тз можно только создавать новые лимиты)
     // - убрать проверку  if (existingLimit != null) которое обновляет, можно заменить на исключение IllegalStateException
     // - причина: по тз нельзя обновлять лимиты
-
+    //  2. добавить и переопределить метод    getLimitByAccountIdAndCategory
+    // причина: лимит ищем по accountFrom и Category
+    // потому что лимита на аккаунт 2
     @Override
     @Transactional
     // @Transactional гарантирует, что вся операция

@@ -16,6 +16,8 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionDTO {
+    //FIXME:
+    // поменять поля на AccountEntity
     @JsonProperty("fromAccount")
     @NotNull(message = "Account Id field must not be null")
     @Positive(message = "Account Id must be positive")

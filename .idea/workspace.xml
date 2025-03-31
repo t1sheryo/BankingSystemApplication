@@ -5,8 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="64bcf87b-f166-4323-9ad8-8e2216106e39" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/entity/AccountEntity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/entity/LimitEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/entity/LimitEntity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/entity/TransactionEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/entity/TransactionEntity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/model/TransactionDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/model/TransactionDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/ExchangeRateService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/ExchangeRateService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/LimitService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/LimitService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/TransactionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/TransactionService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,6 +23,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
   </component>
@@ -121,7 +128,9 @@
       <workItem from="1742833400624" duration="8004000" />
       <workItem from="1743150166592" duration="423000" />
       <workItem from="1743278696387" duration="4011000" />
-      <workItem from="1743284388599" duration="1946000" />
+      <workItem from="1743284388599" duration="2432000" />
+      <workItem from="1743325642330" duration="989000" />
+      <workItem from="1743443521359" duration="7583000" />
     </task>
     <servers />
   </component>

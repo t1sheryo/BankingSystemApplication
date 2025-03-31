@@ -46,6 +46,18 @@ public class TransactionService implements TransactionServiceInterface {
         this.transactionRepository = transactionRepository;
         this.limitService = limitService;
     }
+    //FIXME:
+    // Переделать логику транзакции согласно схеме
+    // 1.Находим счет отправителя и получателя через AccountRepository(Этот пункт можно делать через AccountService
+    // Который будет содержать нужную бизнес логику, но его надо написать)
+    // Нужно это чтобы не было зависимостей между репозиториями
+    // 2.Находим лимит для AccountFrom и Category
+    // 3. Конвертируем сумму транзакции в доллары
+    // 4.Проверяем превышает ли лимит транзакции(флажок limit_exeeded)
+    // 5.Создаем транзакцию
+    // 6.Сохраняем данные о лимите
+    // 7. Сохраняем транзакцию
+    // 8. Обновляем значения LimitRemainder
 
     @Override
     public TransactionEntity createTransaction(TransactionDTO transactionDTO) {
