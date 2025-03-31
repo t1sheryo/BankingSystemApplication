@@ -35,14 +35,10 @@ public class LimitService implements LimitServiceInterface {
     }
 
 
-    // FIXME:
+    // FIXME: добавить user table, изменить структуру, чтобы адаптировать под это
     //TODO: 1. Убрать обновление существующего лимита(по тз можно только создавать новые лимиты)
     // - убрать проверку  if (existingLimit != null) которое обновляет, можно заменить на исключение IllegalStateException
     // - причина: по тз нельзя обновлять лимиты
-    //TODO: 2. обновить установку limitRemainder равным limitSum при создании нового лимита
-    // - использовать newLimit.setLimitRemainder(limit.getLimit())
-    // - причина: остаток должен быть равен лимиту при инициализации, сейчас этого не происходит
-
 
     @Override
     @Transactional
