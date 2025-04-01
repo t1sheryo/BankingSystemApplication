@@ -5,23 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="64bcf87b-f166-4323-9ad8-8e2216106e39" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/AccountService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/interfaces/AccountServiceInterface.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/entity/LimitEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/entity/LimitEntity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/entity/TransactionEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/entity/TransactionEntity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/model/TransactionDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/model/TransactionDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/repository/LimitRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/repository/LimitRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/ExchangeRateService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/ExchangeRateService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/LimitService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/LimitService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/TransactionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/TransactionService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/interfaces/LimitServiceInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/interfaces/LimitServiceInterface.java" afterDir="false" />
     </list>
-    <list id="261db75a-a75e-443c-961e-7614201a8522" name="Changes by timofey" comment="">
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/LimitService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/LimitService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/TransactionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/TransactionService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/interfaces/LimitServiceInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/interfaces/LimitServiceInterface.java" afterDir="false" />
-    </list>
+    <list id="261db75a-a75e-443c-961e-7614201a8522" name="Changes by timofey" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -62,57 +48,6 @@
   <component name="KubernetesApiProvider">{
   &quot;isMigrated&quot;: true
 }</component>
-  <component name="LineStatusTrackerManager">
-    <file path="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/interfaces/LimitServiceInterface.java">
-      <ranges>
-        <range start1="3" end1="3" start2="3" end2="4" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-        <range start1="7" end1="7" start2="8" end2="9" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-        <range start1="12" end1="12" start2="14" end2="15" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-        <range start1="13" end1="14" start2="16" end2="16" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-      </ranges>
-    </file>
-    <file path="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/LimitService.java">
-      <ranges>
-        <range start1="4" end1="4" start2="4" end2="5" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-        <range start1="17" end1="18" start2="18" end2="18" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="21" end1="21" start2="21" end2="22" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-        <range start1="28" end1="28" start2="29" end2="30" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="32" end1="33" start2="34" end2="35" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="34" end1="34" start2="36" end2="37" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="41" end1="44" start2="44" end2="46" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="81" end1="81" start2="83" end2="84" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="82" end1="83" start2="85" end2="85" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="91" end1="92" start2="93" end2="93" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="95" end1="96" start2="96" end2="96" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="97" end1="97" start2="97" end2="99" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="109" end1="110" start2="111" end2="115" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-        <range start1="122" end1="153" start2="127" end2="127" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="158" end1="159" start2="132" end2="133" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-      </ranges>
-    </file>
-    <file path="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/TransactionService.java">
-      <ranges>
-        <range start1="2" end1="2" start2="2" end2="3" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-        <range start1="5" end1="5" start2="6" end2="7" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-        <range start1="6" end1="6" start2="8" end2="9" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="7" end1="7" start2="10" end2="12" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-        <range start1="9" end1="9" start2="14" end2="15" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="13" end1="13" start2="19" end2="21" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-        <range start1="15" end1="15" start2="23" end2="24" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-        <range start1="39" end1="39" start2="48" end2="51" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-        <range start1="44" end1="45" start2="56" end2="59" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-        <range start1="47" end1="47" start2="61" end2="64" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-        <range start1="48" end1="48" start2="65" end2="66" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-        <range start1="61" end1="61" start2="79" end2="86" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="62" end1="62" start2="87" end2="88" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="63" end1="65" start2="89" end2="101" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="66" end1="67" start2="102" end2="106" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="68" end1="70" start2="107" end2="109" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="76" end1="77" start2="115" end2="131" changelist="261db75a-a75e-443c-961e-7614201a8522" />
-        <range start1="125" end1="125" start2="179" end2="220" changelist="64bcf87b-f166-4323-9ad8-8e2216106e39" />
-      </ranges>
-    </file>
-  </component>
   <component name="MavenRunner">
     <option name="vmOptions" value="Djps.track.ap.dependencies=false" />
   </component>
@@ -191,7 +126,7 @@
       <workItem from="1743325642330" duration="989000" />
       <workItem from="1743443521359" duration="8285000" />
       <workItem from="1743508690478" duration="1340000" />
-      <workItem from="1743510108879" duration="9788000" />
+      <workItem from="1743510108879" duration="11162000" />
     </task>
     <servers />
   </component>

@@ -95,7 +95,7 @@ public class TransactionService implements TransactionServiceInterface {
         }
         //Нахождение свежего лимита
         Optional<LimitEntity> limitOptional = limitService.getLimitByAccountIdAndCategory(transactionDTO.getAccountIdFrom(), transactionDTO.getExpenseCategory());
-        LimitEntity limit = limitOptional.orElseThrow(() -> new IllegalStateException("Limit for account" +  transactionDTO.getAccountIdFrom()
+        LimitEntity limit = limitOptional.orElseThrow(() -> new IllegalArgumentException("Limit for account" +  transactionDTO.getAccountIdFrom()
                 + "and category " + transactionDTO.getExpenseCategory() + " not found"));
         //Конвертация в доллары
         BigDecimal sumInUsd = convertToUSD(transactionDTO.getSum(), transactionDTO.getCurrency(), transactionDTO.getTransactionDate().toLocalDate());
