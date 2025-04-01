@@ -7,8 +7,6 @@ import com.bankingsystem.app.enums.Currency;
 import com.bankingsystem.app.model.ExchangeRateDTO;
 import com.bankingsystem.app.repository.ExchangeRateRepository;
 import com.bankingsystem.app.services.interfaces.ExchangeRateServiceInterface;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;

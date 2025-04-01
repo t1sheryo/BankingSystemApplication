@@ -5,6 +5,7 @@ import com.bankingsystem.app.entity.LimitEntity;
 import com.bankingsystem.app.entity.TransactionEntity;
 import com.bankingsystem.app.enums.Category;
 import com.bankingsystem.app.enums.Currency;
+import com.bankingsystem.app.model.AccountPair;
 import com.bankingsystem.app.model.TransactionDTO;
 import com.bankingsystem.app.repository.LimitRepository;
 import com.bankingsystem.app.repository.TransactionRepository;
@@ -15,6 +16,7 @@ import com.bankingsystem.app.services.interfaces.TransactionServiceInterface;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -24,22 +26,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-//этот фикс ми написал чатик я не разбирался пока, я спать короче покич
 // FIXME: Исправить логику создания транзакции для соответствия ТЗ
 // TODO: 1. Добавить конвертацию суммы транзакции в USD с использованием ExchangeRateService
-//       - Добавить зависимость ExchangeRateServiceInterface через @Autowired
-//       - Создать метод convertToUsd для получения курса из ExchangeRateService и конвертации суммы
 //       - Причина: по ТЗ лимиты в USD, а транзакции могут быть в любой валюте (KZT, RUB и т.д.), нужно сравнивать в USD
-// TODO: 2. Перенести логику обновления limitRemainder из LimitService.updateRemainder
-//       - Добавить зависимость LimitRepository через @Autowired
-//       - Обновлять limit.setLimitRemainder(limit.getLimitRemainder().subtract(sumInUsd)), если лимит не превышен
-//       - Причина: обновление остатка должно происходить атомарно с созданием транзакции для целостности данных
-// TODO: 3. Сделать метод транзакционным с аннотацией @Transactional
-//       - Добавить @Transactional над методом
-//       - Причина: создание транзакции и обновление лимита должны быть одним атомарным действием
-// TODO: 4. Добавить проверку на null для limit с выбросом исключения
-//       - Использовать if (limit == null) с IllegalArgumentException
-//       - Причина: сейчас при limit == null будет NullPointerException, нужно явное сообщение об ошибке
 
 @Service
 @Slf4j
@@ -77,65 +66,35 @@ public class TransactionService implements TransactionServiceInterface {
     // 7. Сохраняем транзакцию
     // 8. Обновляем значения LimitRemainder
 
-    // FIXME: Удалить метод updateRemainder и перенести его логику
-    // TODO: 1.Перенести логику обновления limitRemainder в TransactionService.createTransaction и удалить из текущего класса
-    // причина: обновление остатка должно происходить атомарно с созданием транзакции
-    // (что значит операция пройдет успешно либо откатиться)
-    // сейчас метод в LimitService разделяет операции, что может привести к несогласованности (транзакция создана, а лимит не обновлен)
-    // если мы создаем транзакцию то она должна сразу учитывать ее влияние на лимит
-    // лимит не превышен -- мы открываем транзакцию и меняем значение лимита
     @Override
     @Transactional
     public TransactionEntity createTransaction(TransactionDTO transactionDTO) {
-        AccountEntity accountFrom = accountService.getAccountById(transactionDTO.getAccountIdFrom());
-        AccountEntity accountTo = accountService.getAccountById(transactionDTO.getAccountIdTo());
-
-        if(accountFrom == null || accountTo == null) {
-            throw new IllegalStateException("Account not found");
-        }
+        //Проверка счетов отправителя и получателя
+        AccountPair accounts = validateAccounts(transactionDTO.getAccountIdFrom(), transactionDTO.getAccountIdTo());
         //Нахождение свежего лимита
-        Optional<LimitEntity> limitOptional = limitService.getLimitByAccountIdAndCategory(transactionDTO.getAccountIdFrom(), transactionDTO.getExpenseCategory());
-        LimitEntity limit = limitOptional.orElseThrow(() -> new IllegalArgumentException("Limit for account" +  transactionDTO.getAccountIdFrom()
-                + "and category " + transactionDTO.getExpenseCategory() + " not found"));
+        LimitEntity limit = findAndValidateLimit(transactionDTO.getAccountIdFrom(), transactionDTO.getExpenseCategory());
+
         //Конвертация в доллары
-        BigDecimal sumInUsd = convertToUSD(transactionDTO.getSum(), transactionDTO.getCurrency(), transactionDTO.getTransactionDate().toLocalDate());
+        BigDecimal sumInUsd = convertToUSD(transactionDTO.getSum(), transactionDTO.getCurrency(), transactionDTO.getTransactionTime().toLocalDate());
 
         //Проверка превышения лимита
-        boolean limitExceeded = sumInUsd.compareTo(limit.getLimitRemainder()) > 0;
+        boolean limitExceeded = isLimitExceeded(sumInUsd, limit);
 
-        //Создаем транзакцию
-        TransactionEntity transactionEntity = new TransactionEntity();
-        transactionEntity.setAccountFrom(accountFrom);
-        transactionEntity.setAccountTo(accountTo);
-        transactionEntity.setCurrency(transactionDTO.getCurrency());
-        transactionEntity.setSum(transactionDTO.getSum());
-        transactionEntity.setCategory(transactionDTO.getExpenseCategory());
-        transactionEntity.setTransactionTime(OffsetDateTime.now());
-        transactionEntity.setLimitExceeded(limitExceeded);
-        transactionEntity.setLimit(limit);
-
-        //сохраняем данные об лимите на момент транзакции
-        transactionEntity.setLimitSumAtTime(limit.getLimitSum());
-        transactionEntity.setLimitDateTimeAtTime(limit.getLimitDateTime());
-        transactionEntity.setLimitCurrencyAtTime(limit.getLimitCurrencyShortName());
+        TransactionEntity transactionEntity = buildTransactionEntity(transactionDTO, accounts, limit, limitExceeded);
 
         TransactionEntity savedTransaction = transactionRepository.save(transactionEntity);
 
         //обновляем ремайндер
-        limit.setLimitRemainder(limit.getLimitRemainder().subtract(sumInUsd));
-        limitRepository.save(limit);
+        updateLimitRemainder(sumInUsd, limit);
 
-    //TODO доделать
-        return transactionRepository.save(
-                convertDTOToEntity(transactionDTO, limit)
-        );
+        return savedTransaction;
     }
 
     @Override
     public List<TransactionDTO> getAllTransactions() {
         List<TransactionEntity> transactions = transactionRepository.findAll();
         return transactions.stream()
-                .map(this::convertToDTO)
+                .map(TransactionServiceHelper.convertToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -144,7 +103,7 @@ public class TransactionService implements TransactionServiceInterface {
         List<TransactionEntity> transactions = transactionRepository.getAllTransactionsByAccountIdFromOrAccountIdTo(id, id);
 
         return transactions.stream()
-                .map(this::convertToDTO)
+                .map(TransactionServiceHelper.convertToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -153,7 +112,7 @@ public class TransactionService implements TransactionServiceInterface {
         List<TransactionEntity> transactions = transactionRepository.getAllTransactionsByCategory(category);
 
         return transactions.stream()
-                .map(this::convertToDTO)
+                .map(TransactionServiceHelper.convertToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -162,60 +121,94 @@ public class TransactionService implements TransactionServiceInterface {
         List<TransactionEntity> transactions = transactionRepository.getAllTransactionsByAccountIdFromOrAccountIdToAndLimitExceededIsTrue(accountId, accountId);
 
         return transactions.stream()
-                .map(this::convertToDTO)
+                .map(TransactionServiceHelper::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    private TransactionDTO convertToDTO(TransactionEntity transactionEntity) {
-        TransactionDTO transactionDTO = new TransactionDTO();
-        transactionDTO.setAccountIdFrom(transactionEntity.getAccountIdFrom());
-        transactionDTO.setAccountIdTo(transactionEntity.getAccountIdTo());
-        transactionDTO.setCurrency(transactionEntity.getCurrency());
-        transactionDTO.setExpenseCategory(transactionEntity.getCategory());
-        transactionDTO.setSum(transactionEntity.getSum());
-        transactionDTO.setLimitId(transactionEntity.getLimit().getId());
+    @Component
+    private class TransactionServiceHelper {
 
-        return transactionDTO;
-    }
-
-    private TransactionEntity convertDTOToEntity(TransactionDTO transactionDTO, LimitEntity limit){
-
-        boolean limitExceeded = (limit.getLimitRemainder().compareTo(BigDecimal.ZERO) > 0);
-
-        TransactionEntity transactionEntity = new TransactionEntity();
-
-        transactionEntity.setAccountFrom(
-                accountService.getAccountById(transactionDTO.getAccountIdFrom()));
-        transactionEntity.setAccountTo(
-                accountService.getAccountById(transactionDTO.getAccountIdTo()));
-        transactionEntity.setCurrency(transactionDTO.getCurrency());
-        transactionEntity.setCategory(transactionDTO.getExpenseCategory());
-        transactionEntity.setSum(transactionDTO.getSum());
-        transactionEntity.setTransactionTime(OffsetDateTime.now());
-        transactionEntity.setLimitExceeded(limitExceeded);
-        transactionEntity.setLimit(limit);
-        transactionEntity.setLimitDateTimeAtTime(limit.getLimitDateTime());
-        transactionEntity.setLimitSumAtTime(limit.getLimitSum());
-        transactionEntity.setLimitCurrencyAtTime(limit.getLimitCurrencyShortName());
-
-        return transactionEntity;
-    }
-
-    private BigDecimal convertToUSD(BigDecimal amount, Currency currency, LocalDate date) {
-        if(currency.equals(Currency.USD)) {
-            return amount;
+        private TransactionDTO convertToDTO(TransactionEntity transactionEntity) {
+            TransactionDTO transactionDTO = new TransactionDTO();
+            transactionDTO.setAccountIdFrom(transactionEntity.getAccountFrom().getId());
+            transactionDTO.setAccountIdTo(transactionEntity.getAccountTo().getId());
+            transactionDTO.setCurrency(transactionEntity.getCurrency());
+            transactionDTO.setExpenseCategory(transactionEntity.getCategory());
+            transactionDTO.setSum(transactionEntity.getSum());
+            transactionDTO.setTransactionTime(transactionEntity.getTransactionTime());
+            transactionDTO.setLimitId(transactionEntity.getLimit().getId());
+            transactionDTO.setLimitSum(transactionEntity.getLimitSumAtTime());
+            transactionDTO.setLimitDateTime(transactionEntity.getLimitDateTimeAtTime());
+            transactionDTO.setLimitCurrency(transactionEntity.getLimitCurrencyAtTime());
+            return transactionDTO;
         }
-        //var ExchangeRate == Optional<ExchangeRateEntity>
-        //var пишем када очевидно что слева за возращаемый тип
-        var exchangeRate = exchangeRateService.getExchangeRate(currency, Currency.USD, date);
-        if(exchangeRate.isEmpty()) {
-            log.error("Exchange rate is not found for {}/USD on {}", currency, date);
-            throw new IllegalStateException("Exchange rate is not found for " + currency + " on " + date);
-        }
-        BigDecimal rate = exchangeRate.get().getRate();
-        BigDecimal amountInUsd =amount.multiply(rate);
-        log.info("Converted {} {} to {} USD using rate {}", amount, currency,amountInUsd, rate);
-        return amountInUsd;
 
+        private AccountPair validateAccounts(Long accountIdFrom, Long accountIdTo) {
+            AccountEntity accountFrom = accountService.getAccountById(accountIdFrom);
+            AccountEntity accountTo = accountService.getAccountById(accountIdTo);
+
+            if (accountFrom == null || accountTo == null) {
+                throw new IllegalArgumentException("Account not found");
+            }
+            return new AccountPair(accountFrom, accountTo);
+        }
+
+        private LimitEntity findAndValidateLimit(Long account, Category category) {
+            Optional<LimitEntity> limitOptional = limitService.getLimitByAccountIdAndCategory(account, category);
+            LimitEntity limit = limitOptional.orElseThrow(() -> new IllegalArgumentException("Limit for account" + account
+                    + "and category " + category + " not found"));
+            return limit;
+        }
+
+        private boolean isLimitExceeded(BigDecimal sumInUsd, LimitEntity limit) {
+            return sumInUsd.compareTo(limit.getLimitRemainder()) > 0;
+        }
+
+        private TransactionEntity buildTransactionEntity(TransactionDTO transactionDTO, AccountPair accounts,
+                                                         LimitEntity limit, boolean limitExceeded) {
+            TransactionEntity transactionEntity = new TransactionEntity();
+            transactionEntity.setAccountFrom(accounts.getAccountFrom());
+            transactionEntity.setAccountTo(accounts.getAccountTo());
+            transactionEntity.setCurrency(transactionDTO.getCurrency());
+            transactionEntity.setSum(transactionDTO.getSum());
+            transactionEntity.setCategory(transactionDTO.getExpenseCategory());
+            transactionEntity.setTransactionTime(OffsetDateTime.now());
+            transactionEntity.setLimitExceeded(limitExceeded);
+            transactionEntity.setLimit(limit);
+
+            //сохраняем данные об лимите на момент транзакции
+            transactionEntity.setLimitSumAtTime(limit.getLimitSum());
+            transactionEntity.setLimitDateTimeAtTime(limit.getLimitDateTime());
+            transactionEntity.setLimitCurrencyAtTime(limit.getLimitCurrencyShortName());
+
+            return transactionEntity;
+        }
+
+        private void updateLimitRemainder(BigDecimal sumInUsd, LimitEntity limit) {
+            limit.setLimitRemainder(limit.getLimitRemainder().subtract(sumInUsd));
+            limitRepository.save(limit);
+        }
+
+        private BigDecimal convertToUSD(BigDecimal amount, Currency currency, LocalDate date) {
+            if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("Amount must be greater than zero");
+            }
+
+            if (currency.equals(Currency.USD)) {
+                return amount;
+            }
+            //var ExchangeRate == Optional<ExchangeRateEntity>
+            //var пишем када очевидно что слева за возращаемый тип
+            var exchangeRate = exchangeRateService.getExchangeRate(currency, Currency.USD, date);
+            if (exchangeRate.isEmpty()) {
+                log.error("Exchange rate is not found for {}/USD on {}", currency, date);
+                throw new IllegalStateException("Exchange rate is not found for " + currency + " on " + date);
+            }
+            BigDecimal rate = exchangeRate.get().getRate();
+            BigDecimal amountInUsd = amount.multiply(rate);
+            log.info("Converted {} {} to {} USD using rate {}", amount, currency, amountInUsd, rate);
+            return amountInUsd;
+
+        }
     }
 }

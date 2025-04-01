@@ -40,7 +40,7 @@ public class TransactionDTO {
 
     @NotNull
     @PastOrPresent(message = "Transaction time must be in the past or present")
-    private OffsetDateTime transactionDate;
+    private OffsetDateTime transactionTime;
 
    //поле необязательное
     private Long limitId;
