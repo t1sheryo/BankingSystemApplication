@@ -16,8 +16,6 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionDTO {
-    //FIXME:
-    // поменять поля на AccountEntity
     @JsonProperty("fromAccount")
     @NotNull(message = "Account Id field must not be null")
     @Positive(message = "Account Id must be positive")
@@ -40,7 +38,14 @@ public class TransactionDTO {
     @DecimalMin(value = "0.001", message = "Transaction value must be over 0.001 unit of currency")
     private BigDecimal sum;
 
-    @NotNull(message = "Limit ID is required")
-    @Positive()
+    @NotNull
+    @PastOrPresent(message = "Transaction time must be in the past or present")
+    private OffsetDateTime transactionDate;
+
+   //поле необязательное
     private Long limitId;
+
+    private BigDecimal limitSum;
+    private OffsetDateTime limitDateTime;
+    private Currency limitCurrency;
 }

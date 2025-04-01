@@ -4,7 +4,11 @@ import com.bankingsystem.app.enums.Category;
 import com.bankingsystem.app.enums.Currency;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
@@ -13,7 +17,11 @@ import java.time.OffsetDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "limits")
+@Table(name = "limits", indexes = {
+        //Индексация для быстрого поиска аккаунта и категории для быстроты работы функции
+        // LimitService.getLimitByAccountAndCategory
+        @Index(name = "idx_account_category", columnList = "account_id,expense_category")
+})
 public class LimitEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,9 +48,9 @@ public class LimitEntity {
     @NotNull
     @Column(name = "limit_remainder")
     private BigDecimal limitRemainder;
-    //FIXME:
-    // поменять поле на AccountEntity и добавить @ManyToOne
+
     @NotNull
-    @Column(name = "account_id")
-    private Long accountId;
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private AccountEntity account;
 }

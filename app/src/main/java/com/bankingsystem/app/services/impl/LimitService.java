@@ -2,6 +2,7 @@ package com.bankingsystem.app.services.impl;
 
 import com.bankingsystem.app.customExceptions.LimitUpdateNotAllowedException;
 import com.bankingsystem.app.entity.LimitEntity;
+import com.bankingsystem.app.enums.Category;
 import com.bankingsystem.app.enums.Currency;
 import com.bankingsystem.app.model.TransactionDTO;
 import com.bankingsystem.app.model.limits.LimitRequest;
@@ -15,10 +16,10 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j // логирование
@@ -26,22 +27,20 @@ import java.util.stream.Collectors;
 public class LimitService implements LimitServiceInterface {
 
     private final LimitRepository limitRepository;
+    private final AccountService accountService;
     private static final int COOLDOWN_PERIOD_TO_SET_NEW_LIMIT_IN_MONTH = 1;
 
     @Autowired // говорит, что необходимо найти и внедрить
     // зависимость LimitRepository
-    public LimitService(LimitRepository limitRepository) {
+    public LimitService(LimitRepository limitRepository, AccountService accountService) {
         this.limitRepository = limitRepository;
+        this.accountService = accountService;
     }
 
 
     // FIXME: добавить user table, изменить структуру, чтобы адаптировать под это
-    //TODO: 1. Убрать обновление существующего лимита(по тз можно только создавать новые лимиты)
-    // - убрать проверку  if (existingLimit != null) которое обновляет, можно заменить на исключение IllegalStateException
-    // - причина: по тз нельзя обновлять лимиты
-    //  2. добавить и переопределить метод    getLimitByAccountIdAndCategory
-    // причина: лимит ищем по accountFrom и Category
-    // потому что лимита на аккаунт 2
+
+
     @Override
     @Transactional
     // @Transactional гарантирует, что вся операция
@@ -53,50 +52,36 @@ public class LimitService implements LimitServiceInterface {
         OffsetDateTime now = OffsetDateTime.now();
         LimitEntity existingLimit = limitRepository.getLimitByAccountIdAndCategory(limit.getAccountId(), limit.getCategory());
 
-        if(existingLimit != null) {
-            OffsetDateTime prevUpdateTime = existingLimit.getLimitDateTime();
-            BigDecimal prevRemainder = existingLimit.getLimitRemainder();
+        OffsetDateTime prevUpdateTime = existingLimit.getLimitDateTime();
+        BigDecimal prevRemainder = existingLimit.getLimitRemainder();
 
-            // Подсчитываем сколько времени прошло с момента прошлого обновления лимита
-            long monthsBetween = ChronoUnit.MONTHS.between(
-                    prevUpdateTime.truncatedTo(ChronoUnit.DAYS),
-                    now.truncatedTo(ChronoUnit.DAYS)
+        // Подсчитываем сколько времени прошло с момента прошлого обновления лимита
+        long monthsBetween = ChronoUnit.MONTHS.between(
+                prevUpdateTime.truncatedTo(ChronoUnit.DAYS),
+                now.truncatedTo(ChronoUnit.DAYS)
+        );
+
+        // Проверяем, превышает ли период 1 месяц
+        if (monthsBetween <= COOLDOWN_PERIOD_TO_SET_NEW_LIMIT_IN_MONTH) {
+            // Логирование того, что пользователь слишком рано хочет обновить лимит
+            log.warn("Attempt to update limit too soon. Account: {}, Category: {}, Last update: {}",
+                    limit.getAccountId(),
+                    limit.getCategory(),
+                    existingLimit.getLimitDateTime());
+
+            throw new LimitUpdateNotAllowedException(
+                    String.format("Limit can be updated only once per %d month(s). " +
+                                    "Last update was at %s",
+                            COOLDOWN_PERIOD_TO_SET_NEW_LIMIT_IN_MONTH,
+                            prevUpdateTime.format(DateTimeFormatter.ISO_DATE))
             );
-
-            // Проверяем, превышает ли период 1 месяц
-            if (monthsBetween <= COOLDOWN_PERIOD_TO_SET_NEW_LIMIT_IN_MONTH) {
-                // Логирование того, что пользователь слишком рано хочет обновить лимит
-                log.warn("Attempt to update limit too soon. Account: {}, Category: {}, Last update: {}",
-                        limit.getAccountId(),
-                        limit.getCategory(),
-                        existingLimit.getLimitDateTime());
-
-                throw new LimitUpdateNotAllowedException(
-                        String.format("Limit can be updated only once per %d month(s). " +
-                                        "Last update was at %s",
-                                COOLDOWN_PERIOD_TO_SET_NEW_LIMIT_IN_MONTH,
-                                prevUpdateTime.format(DateTimeFormatter.ISO_DATE))
-                );
-            }
-
-            existingLimit.setLimitRemainder(prevRemainder.add(limit.getLimit().subtract(existingLimit.getLimitSum())));
-            existingLimit.setLimitSum(limit.getLimit());
-            existingLimit.setLimitCurrencyShortName(Currency.USD);
-            existingLimit.setLimitDateTime(now);
-            return limitRepository.save(existingLimit);
         }
 
-
-        // Если не существует - создаем новый
-        LimitEntity newLimit = new LimitEntity();
-        newLimit.setAccountId(limit.getAccountId());
-        newLimit.setLimitSum(limit.getLimit());
-        newLimit.setCategory(limit.getCategory());
-        newLimit.setLimitDateTime(now);
-        newLimit.setLimitRemainder(limit.getLimit());
-        newLimit.setLimitCurrencyShortName(Currency.USD);
-
-        return limitRepository.save(newLimit);
+        existingLimit.setLimitSum(limit.getLimit());
+        existingLimit.setLimitRemainder(prevRemainder.add(limit.getLimit().subtract(existingLimit.getLimitSum())));
+        existingLimit.setLimitCurrencyShortName(Currency.USD);
+        existingLimit.setLimitDateTime(now);
+        return limitRepository.save(existingLimit);
     }
 
     @Override
@@ -107,7 +92,10 @@ public class LimitService implements LimitServiceInterface {
                 .map(this::convertToLimitResponse)
                 .collect(Collectors.toList());
     }
-
+    @Override
+    public Optional<LimitEntity> getLimitByAccountIdAndCategory(Long accountId, Category category) {
+        return limitRepository.findFirstByAccountIdAndCategoryOrderByLimitDateTimeDesc(accountId,category);
+    }
     @Override
     public LimitEntity getLimitByDBId(Long DBId){
         return limitRepository.findById(DBId).orElse(null);
@@ -120,43 +108,12 @@ public class LimitService implements LimitServiceInterface {
                 .map(this::convertToLimitResponse)
                 .collect(Collectors.toList());
     }
-    //FIXME: Удалить метод updateRemainder и перенести его логику
-    //TODO: 1.Перенести логику обновления limitRemainder в TransactionService.createTransaction и удалить из текущего класса
-    // причина: обновление остатка должно происходить атомарно с созданием транзакции
-    // (что значит операция пройдет успешно либо откатиться)
-    // сейчас метод в LimitService разделяет операции, что может привести к несогласованности (транзакция создана, а лимит не обновлен)
-    // если мы создаем транзакцию то она должна сразу учитывать ее влияние на лимит
-    // лимит не превышен -- мы открываем транзакцию и меняем значение лимита
-
-    @Override
-    @Transactional
-    // @Transactional гарантирует, что вся операция
-    // будет выполнена как единое целое:
-    // либо все изменения будут успешно сохранены в базе данных,
-    // либо, в случае ошибки,
-    // ничего не будет сохранено (rollback).
-    public void updateRemainder(TransactionDTO transaction) {
-        LimitEntity limitEntity = limitRepository.findById(transaction.getLimitId()).orElse(null);
-        BigDecimal transactionValue = transaction.getSum();
-
-        if(limitEntity == null){
-            log.error("No limit found with id: {}", transaction.getLimitId());
-            return ;
-        }
-
-        limitEntity.setLimitRemainder(limitEntity.getLimitRemainder().subtract(transactionValue));
-
-        // Грубо говоря, тут происходит перезапись объекта limitEntity в БД
-        // Тут вызывается механизм "dirty checking"
-        // и Hibernate автоматически обновляет только те поля, которые были изменены
-        limitRepository.save(limitEntity);
-    }
 
     // вспомогательный метод для преобразования
     // LimitEntity в LimitResponse
     private LimitResponse convertToLimitResponse(LimitEntity limitEntity) {
         LimitResponse response = new LimitResponse();
-        response.setAccountId(limitEntity.getAccountId());
+        response.setAccountId(limitEntity.getAccount().getId());
         response.setCategory(limitEntity.getCategory());
         response.setLimit(limitEntity.getLimitSum());
         response.setLastUpdate(limitEntity.getLimitDateTime());

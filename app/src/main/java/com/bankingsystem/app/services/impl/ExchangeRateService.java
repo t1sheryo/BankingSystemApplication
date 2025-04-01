@@ -39,8 +39,7 @@ import java.util.Optional;
 // С RestTemplate:
 // String url = "https://api.twelvedata.com/price?symbol=USD/EUR&apikey=your_api_key";
 // String response = restTemplate.getForObject(url, String.class);
-//FIXME:
-// 1.Добавить метод для конвертации в доллар
+
 
 @Slf4j
 @Service
