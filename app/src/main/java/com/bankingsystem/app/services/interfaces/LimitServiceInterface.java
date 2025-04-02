@@ -2,7 +2,6 @@ package com.bankingsystem.app.services.interfaces;
 
 import com.bankingsystem.app.entity.LimitEntity;
 import com.bankingsystem.app.enums.Category;
-import com.bankingsystem.app.model.TransactionDTO;
 import com.bankingsystem.app.model.limits.LimitRequest;
 import com.bankingsystem.app.model.limits.LimitResponse;
 import java.util.List;
@@ -14,4 +13,5 @@ public interface LimitServiceInterface {
     LimitEntity getLimitByDBId(Long DBId);
     Optional<LimitEntity> getLimitByAccountIdAndCategory(Long accountId, Category category);
     List<LimitResponse> getAllLimits();
+    LimitEntity saveLimit(LimitEntity limit);
 }

@@ -26,31 +26,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-// FIXME: Исправить логику создания транзакции для соответствия ТЗ
-// TODO: 1. Добавить конвертацию суммы транзакции в USD с использованием ExchangeRateService
-//       - Причина: по ТЗ лимиты в USD, а транзакции могут быть в любой валюте (KZT, RUB и т.д.), нужно сравнивать в USD
-
 @Service
 @Slf4j
 public class TransactionService implements TransactionServiceInterface {
     private final TransactionRepository transactionRepository;
-    private final LimitServiceInterface limitService;
-    private final ExchangeRateServiceInterface exchangeRateService;
-    private final AccountServiceInterface accountService;
-    private final LimitRepository limitRepository;
+    private final TransactionServiceHelper transactionServiceHelper;
 
     //  Autowired делает автоматическую инъекцию зависимостей(dependency injection)
     //   Аннотация @Autowired говорит Spring: "Найди бины типа TransactionRepository и LimitService
     //    в контексте приложения и передай их в этот конструктор
     @Autowired
-    public TransactionService(TransactionRepository transactionRepository, LimitServiceInterface limitService,
-                              ExchangeRateServiceInterface exchangeRateService, AccountServiceInterface accountService,
-                              LimitRepository limitRepository) {
+    public TransactionService(TransactionRepository transactionRepository,
+                              TransactionServiceHelper transactionServiceHelper) {
         this.transactionRepository = transactionRepository;
-        this.limitService = limitService;
-        this.exchangeRateService = exchangeRateService;
-        this.accountService = accountService;
-        this.limitRepository = limitRepository;
+        this.transactionServiceHelper = transactionServiceHelper;
     }
 
     //FIXME:
@@ -70,22 +59,22 @@ public class TransactionService implements TransactionServiceInterface {
     @Transactional
     public TransactionEntity createTransaction(TransactionDTO transactionDTO) {
         //Проверка счетов отправителя и получателя
-        AccountPair accounts = validateAccounts(transactionDTO.getAccountIdFrom(), transactionDTO.getAccountIdTo());
+        AccountPair accounts = transactionServiceHelper.validateAccounts(transactionDTO.getAccountIdFrom(), transactionDTO.getAccountIdTo());
         //Нахождение свежего лимита
-        LimitEntity limit = findAndValidateLimit(transactionDTO.getAccountIdFrom(), transactionDTO.getExpenseCategory());
+        LimitEntity limit = transactionServiceHelper.findAndValidateLimit(transactionDTO.getAccountIdFrom(), transactionDTO.getExpenseCategory());
 
         //Конвертация в доллары
-        BigDecimal sumInUsd = convertToUSD(transactionDTO.getSum(), transactionDTO.getCurrency(), transactionDTO.getTransactionTime().toLocalDate());
+        BigDecimal sumInUsd = transactionServiceHelper.convertToUSD(transactionDTO.getSum(), transactionDTO.getCurrency(), transactionDTO.getTransactionTime().toLocalDate());
 
         //Проверка превышения лимита
-        boolean limitExceeded = isLimitExceeded(sumInUsd, limit);
+        boolean limitExceeded = transactionServiceHelper.isLimitExceeded(sumInUsd, limit);
 
-        TransactionEntity transactionEntity = buildTransactionEntity(transactionDTO, accounts, limit, limitExceeded);
+        TransactionEntity transactionEntity = transactionServiceHelper.buildTransactionEntity(transactionDTO, accounts, limit, limitExceeded);
 
         TransactionEntity savedTransaction = transactionRepository.save(transactionEntity);
 
         //обновляем ремайндер
-        updateLimitRemainder(sumInUsd, limit);
+        transactionServiceHelper.updateLimitRemainder(sumInUsd, limit);
 
         return savedTransaction;
     }
@@ -94,7 +83,7 @@ public class TransactionService implements TransactionServiceInterface {
     public List<TransactionDTO> getAllTransactions() {
         List<TransactionEntity> transactions = transactionRepository.findAll();
         return transactions.stream()
-                .map(TransactionServiceHelper.convertToDTO)
+                .map(transactionServiceHelper::convertToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -103,7 +92,7 @@ public class TransactionService implements TransactionServiceInterface {
         List<TransactionEntity> transactions = transactionRepository.getAllTransactionsByAccountIdFromOrAccountIdTo(id, id);
 
         return transactions.stream()
-                .map(TransactionServiceHelper.convertToDTO)
+                .map(transactionServiceHelper::convertToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -112,7 +101,7 @@ public class TransactionService implements TransactionServiceInterface {
         List<TransactionEntity> transactions = transactionRepository.getAllTransactionsByCategory(category);
 
         return transactions.stream()
-                .map(TransactionServiceHelper.convertToDTO)
+                .map(transactionServiceHelper::convertToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -121,12 +110,28 @@ public class TransactionService implements TransactionServiceInterface {
         List<TransactionEntity> transactions = transactionRepository.getAllTransactionsByAccountIdFromOrAccountIdToAndLimitExceededIsTrue(accountId, accountId);
 
         return transactions.stream()
-                .map(TransactionServiceHelper::convertToDTO)
+                .map(transactionServiceHelper::convertToDTO)
                 .collect(Collectors.toList());
     }
 
     @Component
     private class TransactionServiceHelper {
+
+        private final LimitServiceInterface limitService;
+        private final ExchangeRateServiceInterface exchangeRateService;
+        private final AccountServiceInterface accountService;
+
+        @Autowired
+        public TransactionServiceHelper(
+                LimitServiceInterface limitService,
+                ExchangeRateServiceInterface exchangeRateService,
+                AccountServiceInterface accountService,
+                LimitRepository limitRepository
+        ){
+            this.limitService = limitService;
+            this.exchangeRateService = exchangeRateService;
+            this.accountService = accountService;
+        }
 
         private TransactionDTO convertToDTO(TransactionEntity transactionEntity) {
             TransactionDTO transactionDTO = new TransactionDTO();
@@ -186,7 +191,7 @@ public class TransactionService implements TransactionServiceInterface {
 
         private void updateLimitRemainder(BigDecimal sumInUsd, LimitEntity limit) {
             limit.setLimitRemainder(limit.getLimitRemainder().subtract(sumInUsd));
-            limitRepository.save(limit);
+            limitService.saveLimit(limit);
         }
 
         private BigDecimal convertToUSD(BigDecimal amount, Currency currency, LocalDate date) {

@@ -81,51 +81,51 @@ public class ExchangeRateService implements ExchangeRateServiceInterface {
 
     @Override
     public ExchangeRateEntity updateExchangeRateManually(Currency currencyFrom, Currency currencyTo) {
-    log.info("Updating exchange rate manually for {}/{}", currencyFrom, currencyTo);
+        log.info("Updating exchange rate manually for {}/{}", currencyFrom, currencyTo);
 
-    try {
-        // Формируем URL запроса
-        String url = String.format("%s/exchange_rate?symbol=%s/%s&apikey=%s",
-                twelveDataConfig.getApiUrl(), currencyFrom, currencyTo, twelveDataConfig.getApiKey());
+        try {
+            // Формируем URL запроса
+            String url = String.format("%s/exchange_rate?symbol=%s/%s&apikey=%s",
+                    twelveDataConfig.getApiUrl(), currencyFrom, currencyTo, twelveDataConfig.getApiKey());
 
-        log.debug("Making request to URL: {}", url);
+            log.debug("Making request to URL: {}", url);
 
-        // Делаем запрос и автоматически преобразуем JSON в DTO
-        ExchangeRateDTO response = restTemplate.getForObject(url, ExchangeRateDTO.class);
+            // Делаем запрос и автоматически преобразуем JSON в DTO
+            ExchangeRateDTO response = restTemplate.getForObject(url, ExchangeRateDTO.class);
 
-        // Проверяем ответ
-        if (response == null) {
-            throw new RuntimeException("Empty response from API");
+            // Проверяем ответ
+            if (response == null) {
+                throw new RuntimeException("Empty response from API");
+            }
+
+            log.debug("Received rate: {}", response.getRate());
+
+            // Получаем курс (используем value если есть, иначе rate)
+            BigDecimal rate = BigDecimal.valueOf(response.getRate());
+
+            // Создаем или обновляем запись в БД
+            LocalDate today = LocalDate.now();
+            ExchangeRateEntity entity = exchangeRateRepository
+                    .findByIdAndRateDate(
+                        new ExchangeRateCompositePrimaryKey(currencyFrom, currencyTo),
+                        today)
+                    .orElseGet(ExchangeRateEntity::new);
+
+            entity.setId(new ExchangeRateCompositePrimaryKey(currencyFrom, currencyTo));
+            entity.setRateDate(today);
+            entity.setRate(rate);
+
+            return exchangeRateRepository.save(entity);
+
+        } catch (RestClientException e) {
+            log.error("API request failed for {}/{}: {}", currencyFrom, currencyTo, e.getMessage());
+            throw new RuntimeException("Failed to get exchange rate from API", e);
+        } catch (Exception e) {
+            log.error("Unexpected error in updateExchangeRateManually for {}/{}: {}",
+                    currencyFrom, currencyTo, e.getMessage());
+            throw new RuntimeException("Exchange rate update failed", e);
         }
-
-        log.debug("Received rate: {}", response.getRate());
-
-        // Получаем курс (используем value если есть, иначе rate)
-        BigDecimal rate = BigDecimal.valueOf(response.getRate());
-
-        // Создаем или обновляем запись в БД
-        LocalDate today = LocalDate.now();
-        ExchangeRateEntity entity = exchangeRateRepository
-                .findByIdAndRateDate(
-                    new ExchangeRateCompositePrimaryKey(currencyFrom, currencyTo),
-                    today)
-                .orElseGet(ExchangeRateEntity::new);
-
-        entity.setId(new ExchangeRateCompositePrimaryKey(currencyFrom, currencyTo));
-        entity.setRateDate(today);
-        entity.setRate(rate);
-
-        return exchangeRateRepository.save(entity);
-
-    } catch (RestClientException e) {
-        log.error("API request failed for {}/{}: {}", currencyFrom, currencyTo, e.getMessage());
-        throw new RuntimeException("Failed to get exchange rate from API", e);
-    } catch (Exception e) {
-        log.error("Unexpected error in updateExchangeRateManually for {}/{}: {}",
-                currencyFrom, currencyTo, e.getMessage());
-        throw new RuntimeException("Exchange rate update failed", e);
     }
-}
 
     // автоматическое обновление курсов раз в указанную единицу времени
     @Scheduled(fixedRate = FIXED_UPDATE_RATE_TIME)

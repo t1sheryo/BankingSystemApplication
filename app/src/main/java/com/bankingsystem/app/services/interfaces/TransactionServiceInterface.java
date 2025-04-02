@@ -8,12 +8,8 @@ import java.util.List;
 
 public interface TransactionServiceInterface {
      TransactionEntity createTransaction(TransactionDTO transaction);
-
      List<TransactionDTO> getAllTransactions();
-
      List<TransactionDTO> getTransactionsByAccountId(Long id);
-
      List<TransactionDTO> getTransactionsByCategory(Category category);
-
      List<TransactionDTO> getTransactionsByAccountIdWhichExceedLimit(Long accountId);
 }

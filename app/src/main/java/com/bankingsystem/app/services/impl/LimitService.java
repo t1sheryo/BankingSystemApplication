@@ -27,14 +27,12 @@ import java.util.stream.Collectors;
 public class LimitService implements LimitServiceInterface {
 
     private final LimitRepository limitRepository;
-    private final AccountService accountService;
     private static final int COOLDOWN_PERIOD_TO_SET_NEW_LIMIT_IN_MONTH = 1;
 
     @Autowired // говорит, что необходимо найти и внедрить
     // зависимость LimitRepository
-    public LimitService(LimitRepository limitRepository, AccountService accountService) {
+    public LimitService(LimitRepository limitRepository) {
         this.limitRepository = limitRepository;
-        this.accountService = accountService;
     }
 
 
@@ -96,6 +94,7 @@ public class LimitService implements LimitServiceInterface {
     public Optional<LimitEntity> getLimitByAccountIdAndCategory(Long accountId, Category category) {
         return limitRepository.findFirstByAccountIdAndCategoryOrderByLimitDateTimeDesc(accountId,category);
     }
+
     @Override
     public LimitEntity getLimitByDBId(Long DBId){
         return limitRepository.findById(DBId).orElse(null);
@@ -107,6 +106,11 @@ public class LimitService implements LimitServiceInterface {
         return limits.stream()
                 .map(this::convertToLimitResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public LimitEntity saveLimit(LimitEntity limit) {
+        return limitRepository.save(limit);
     }
 
     // вспомогательный метод для преобразования
