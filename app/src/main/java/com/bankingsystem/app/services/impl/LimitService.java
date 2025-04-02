@@ -1,10 +1,9 @@
 package com.bankingsystem.app.services.impl;
 
-import com.bankingsystem.app.customExceptions.LimitUpdateNotAllowedException;
+import com.bankingsystem.app.customException.LimitUpdateNotAllowedException;
 import com.bankingsystem.app.entity.LimitEntity;
 import com.bankingsystem.app.enums.Category;
 import com.bankingsystem.app.enums.Currency;
-import com.bankingsystem.app.model.TransactionDTO;
 import com.bankingsystem.app.model.limits.LimitRequest;
 import com.bankingsystem.app.model.limits.LimitResponse;
 import com.bankingsystem.app.repository.LimitRepository;
@@ -34,10 +33,6 @@ public class LimitService implements LimitServiceInterface {
     public LimitService(LimitRepository limitRepository) {
         this.limitRepository = limitRepository;
     }
-
-
-    // FIXME: добавить user table, изменить структуру, чтобы адаптировать под это
-
 
     @Override
     @Transactional
