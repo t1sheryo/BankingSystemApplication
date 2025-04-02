@@ -47,8 +47,15 @@ public class LimitService implements LimitServiceInterface {
     // либо, в случае ошибки,
     // ничего не будет сохранено (rollback).
     public LimitEntity setLimit(LimitRequest limit) {
+        if(limit.getLimit().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Limit cannot be less than 0");
+        }
+
         OffsetDateTime now = OffsetDateTime.now();
         LimitEntity existingLimit = limitRepository.getLimitByAccountIdAndCategory(limit.getAccountId(), limit.getCategory());
+        if(existingLimit == null) {
+            throw new IllegalStateException("Limit not found for account id " + limit.getAccountId());
+        }
 
         OffsetDateTime prevUpdateTime = existingLimit.getLimitDateTime();
         BigDecimal prevRemainder = existingLimit.getLimitRemainder();
@@ -116,6 +123,9 @@ public class LimitService implements LimitServiceInterface {
     // вспомогательный метод для преобразования
     // LimitEntity в LimitResponse
     private LimitResponse convertToLimitResponse(LimitEntity limitEntity) {
+        if(limitEntity.getAccount() == null) {
+            throw new IllegalArgumentException("Account is not set for limitId " + limitEntity.getId());
+        }
         LimitResponse response = new LimitResponse();
         response.setAccountId(limitEntity.getAccount().getId());
         response.setCategory(limitEntity.getCategory());

@@ -42,22 +42,14 @@ public class TransactionService implements TransactionServiceInterface {
         this.transactionServiceHelper = transactionServiceHelper;
     }
 
-    //FIXME:
-    // Переделать логику транзакции согласно схеме
-    // 1.Находим счет отправителя и получателя через AccountRepository(Этот пункт можно делать через AccountService
-    // Который будет содержать нужную бизнес логику, но его надо написать)
-    // Нужно это чтобы не было зависимостей между репозиториями
-    // 2.Находим лимит для AccountFrom и Category
-    // 3. Конвертируем сумму транзакции в доллары
-    // 4.Проверяем превышает ли лимит транзакции(флажок limit_exeeded)
-    // 5.Создаем транзакцию
-    // 6.Сохраняем данные о лимите
-    // 7. Сохраняем транзакцию
-    // 8. Обновляем значения LimitRemainder
 
     @Override
     @Transactional
     public TransactionEntity createTransaction(TransactionDTO transactionDTO) {
+
+        log.info("Creating transaction for accountIdFrom: {}, accountIdTo: {}, category: {}, sum: {}, currency: {}",
+                transactionDTO.getAccountIdFrom(), transactionDTO.getAccountIdTo(),
+                transactionDTO.getExpenseCategory(), transactionDTO.getSum(), transactionDTO.getCurrency());
         //Проверка счетов отправителя и получателя
         AccountPair accounts = transactionServiceHelper.validateAccounts(transactionDTO.getAccountIdFrom(), transactionDTO.getAccountIdTo());
         //Нахождение свежего лимита
@@ -73,9 +65,12 @@ public class TransactionService implements TransactionServiceInterface {
 
         TransactionEntity savedTransaction = transactionRepository.save(transactionEntity);
 
+        log.info("Updating limitRemainder for limitId: {}, old value: {}, new value: {}",
+                limit.getId(), limit.getLimitRemainder(), limit.getLimitRemainder().subtract(sumInUsd));
         //обновляем ремайндер
         transactionServiceHelper.updateLimitRemainder(sumInUsd, limit);
 
+        log.info("Transaction created with id: {}", savedTransaction.getId());
         return savedTransaction;
     }
 
@@ -166,7 +161,12 @@ public class TransactionService implements TransactionServiceInterface {
         }
 
         private boolean isLimitExceeded(BigDecimal sumInUsd, LimitEntity limit) {
-            return sumInUsd.compareTo(limit.getLimitRemainder()) > 0;
+            BigDecimal limitRemainder = limit.getLimitRemainder();
+            if(limitRemainder == null)
+            {
+                throw new IllegalStateException("Limit remainder is null for limitId: " + limit.getId());
+            }
+            return sumInUsd.compareTo(limitRemainder) > 0;
         }
 
         private TransactionEntity buildTransactionEntity(TransactionDTO transactionDTO, AccountPair accounts,
@@ -190,6 +190,11 @@ public class TransactionService implements TransactionServiceInterface {
         }
 
         private void updateLimitRemainder(BigDecimal sumInUsd, LimitEntity limit) {
+            BigDecimal limitRemainder = limit.getLimitRemainder();
+            if(limitRemainder == null)
+            {
+                throw new IllegalStateException("Limit remainder is null for limitId: " + limit.getId());
+            }
             limit.setLimitRemainder(limit.getLimitRemainder().subtract(sumInUsd));
             limitService.saveLimit(limit);
         }
