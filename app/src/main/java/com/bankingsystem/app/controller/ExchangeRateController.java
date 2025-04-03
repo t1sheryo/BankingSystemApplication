@@ -34,20 +34,21 @@ public class ExchangeRateController {
             @RequestParam(required = false) LocalDate date
             )
     {
-     log.info("getExchangeRate from: {} to: {} on date {}", from, to, date);
-     //определение текущей даты
-        LocalDate targetDate = (date == null) ? LocalDate.now() : date;
-     Optional<ExchangeRateEntity> exchangeRateEntity = exchangeRateService.getExchangeRate(from, to, targetDate);
-     //isPresent метод класса Optional который возращает true если внутри Optional есть значение
-        //Optional != null
-     if (exchangeRateEntity.isPresent()) {
-         return ResponseEntity.ok(exchangeRateEntity.get());
-     }
-     else {
-         log.warn("No exchange rate found for from: {} to: {} on date {}", from, to, date);
-         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-     }
+         log.info("getExchangeRate from: {} to: {} on date {}", from, to, date);
+         //определение текущей даты
+            LocalDate targetDate = (date == null) ? LocalDate.now() : date;
+         Optional<ExchangeRateEntity> exchangeRateEntity = exchangeRateService.getExchangeRate(from, to, targetDate);
+         //isPresent метод класса Optional который возращает true если внутри Optional есть значение
+            //Optional != null
+         if (exchangeRateEntity.isPresent()) {
+             return ResponseEntity.ok(exchangeRateEntity.get());
+         }
+         else {
+             log.warn("No exchange rate found for from: {} to: {} on date {}", from, to, date);
+             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+         }
     }
+
     //метод для обновления курса валют из внешнего API
     //и сохранения в базу данных
     @PostMapping("/update")
@@ -67,5 +68,4 @@ public class ExchangeRateController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 }
