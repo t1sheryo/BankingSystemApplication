@@ -93,7 +93,7 @@ public class TransactionController {
 //    }
 
 
-    @GetMapping("/{id}")
+    @GetMapping("/account/{id}")
     public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountId(
         @PathVariable Long id,
         @RequestParam(required = false) Boolean exceededOnly) {

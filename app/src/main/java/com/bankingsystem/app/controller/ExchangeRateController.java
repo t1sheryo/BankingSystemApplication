@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.Locale;
 import java.util.Optional;
-
+//TODO: разобраться что тут к чему с сохранением в бд
 @Slf4j
 @RestController
 @RequestMapping("/bank/exchange-rates")
@@ -41,6 +41,7 @@ public class ExchangeRateController {
          //isPresent метод класса Optional который возращает true если внутри Optional есть значение
             //Optional != null
          if (exchangeRateEntity.isPresent()) {
+             exchangeRateService.saveExchangeRate(exchangeRateEntity.get());
              return ResponseEntity.ok(exchangeRateEntity.get());
          }
          else {
@@ -60,6 +61,7 @@ public class ExchangeRateController {
         try{
             //получаем сущность через метод сервиса
             ExchangeRateEntity rateEntity = exchangeRateService.updateExchangeRateManually(from, to);
+            exchangeRateService.saveExchangeRate(rateEntity);
             return ResponseEntity.ok(rateEntity);
         }
         catch(Exception e){

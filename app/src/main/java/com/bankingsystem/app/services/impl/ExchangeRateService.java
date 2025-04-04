@@ -148,4 +148,9 @@ public class ExchangeRateService implements ExchangeRateServiceInterface {
         ExchangeRateCompositePrimaryKey key = new ExchangeRateCompositePrimaryKey(from, to);
         return exchangeRateRepository.findByIdAndRateDate(key, date);
     }
+
+    @Override
+    public void saveExchangeRate(ExchangeRateEntity exchangeRate) {
+        exchangeRateRepository.save(exchangeRate);
+    }
 }

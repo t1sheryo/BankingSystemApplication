@@ -5,10 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="64bcf87b-f166-4323-9ad8-8e2216106e39" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/TransactionServiceHelper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/resources/db/migration/V2__test_data.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/controller/ExchangeRateController.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/controller/ExchangeRateController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/controller/TransactionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/controller/TransactionController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/repository/TransactionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/repository/TransactionRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/ExchangeRateService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/ExchangeRateService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/TransactionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/TransactionService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/resources/db/migration/V1__init_tables.sql" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/db/migration/V1__init_tables.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/interfaces/ExchangeRateServiceInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/interfaces/ExchangeRateServiceInterface.java" afterDir="false" />
     </list>
     <list id="261db75a-a75e-443c-961e-7614201a8522" name="Changes by timofey" comment="" />
     <option name="SHOW_DIALOG" value="false" />
@@ -73,7 +78,7 @@
     "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "Spring Boot.AppApplication.executor": "Debug",
+    "Spring Boot.AppApplication.executor": "Run",
     "git-widget-placeholder": "dev",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/likho/.m2/repository/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar",
@@ -85,7 +90,7 @@
     "project.structure.last.edited": "Libraries",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "reference.projectsettings.compiler.annotationProcessors",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -132,6 +137,7 @@
       <workItem from="1743510108879" duration="11582000" />
       <workItem from="1743601616030" duration="6095000" />
       <workItem from="1743755183715" duration="5653000" />
+      <workItem from="1743786769765" duration="9416000" />
     </task>
     <servers />
   </component>
