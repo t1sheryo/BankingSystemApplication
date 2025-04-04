@@ -3,21 +3,14 @@ package com.bankingsystem.app.controller;
 import com.bankingsystem.app.entity.TransactionEntity;
 import com.bankingsystem.app.enums.Category;
 import com.bankingsystem.app.model.TransactionDTO;
-import com.bankingsystem.app.services.impl.AccountService;
-import com.bankingsystem.app.services.impl.TransactionService;
 import com.bankingsystem.app.services.interfaces.AccountServiceInterface;
 import com.bankingsystem.app.services.interfaces.TransactionServiceInterface;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Arrays;
 import java.util.List;
-import com.bankingsystem.app.enums.Currency;
 
 @Slf4j
 @RestController
@@ -82,6 +75,7 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getTransactionsByCategory(category));
     }
 
+<<<<<<< Updated upstream
 //    @GetMapping("/{id}")
 //    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountId(@PathVariable Long id){
 //        return ResponseEntity.ok(transactionService.getTransactionsByAccountId(id));
@@ -94,6 +88,9 @@ public class TransactionController {
 
 
     @GetMapping("/account/{id}")
+=======
+    @GetMapping("/{id}")
+>>>>>>> Stashed changes
     public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountId(
         @PathVariable Long id,
         @RequestParam(required = false) Boolean exceededOnly) {
