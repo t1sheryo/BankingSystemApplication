@@ -12,7 +12,9 @@ import java.util.List;
 // JpaRepository которые включают в себя CRUD(create, read, update, delete)
 @Repository
 public interface TransactionRepository extends JpaRepository<TransactionEntity, Long> {
-    List<TransactionEntity> getAllTransactionsByAccountIdFromOrAccountIdTo(Long accountIdFrom, Long accountIdTo);
+    //FIXME:
+    // изменить методы чтобы они принимали из accountEntity  
+    List<TransactionEntity> getAllTransactionsByAccountFromOrAccountTo(Long accountFrom, Long accountTo);
     List<TransactionEntity> getAllTransactionsByCategory(Category category);
-    List<TransactionEntity> getAllTransactionsByAccountIdFromOrAccountIdToAndLimitExceededIsTrue(Long accountIdFrom, Long accountIdTo);
+    List<TransactionEntity> getAllTransactionsByAccountFromOrAccountToAndLimitExceededIsTrue(Long accountFrom, Long accountTo);
 }

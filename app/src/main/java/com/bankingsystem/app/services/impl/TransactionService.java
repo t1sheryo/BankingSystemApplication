@@ -84,7 +84,7 @@ public class TransactionService implements TransactionServiceInterface {
 
     @Override
     public List<TransactionDTO> getTransactionsByAccountId(Long id) {
-        List<TransactionEntity> transactions = transactionRepository.getAllTransactionsByAccountIdFromOrAccountIdTo(id, id);
+        List<TransactionEntity> transactions = transactionRepository.getAllTransactionsByAccountFromOrAccountTo(id, id);
 
         return transactions.stream()
                 .map(transactionServiceHelper::convertToDTO)
@@ -102,7 +102,7 @@ public class TransactionService implements TransactionServiceInterface {
 
     @Override
     public List<TransactionDTO> getTransactionsByAccountIdWhichExceedLimit(Long accountId) {
-        List<TransactionEntity> transactions = transactionRepository.getAllTransactionsByAccountIdFromOrAccountIdToAndLimitExceededIsTrue(accountId, accountId);
+        List<TransactionEntity> transactions = transactionRepository.getAllTransactionsByAccountFromOrAccountToAndLimitExceededIsTrue(accountId, accountId);
 
         return transactions.stream()
                 .map(transactionServiceHelper::convertToDTO)
