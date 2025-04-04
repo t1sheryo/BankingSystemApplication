@@ -75,22 +75,7 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getTransactionsByCategory(category));
     }
 
-<<<<<<< Updated upstream
-//    @GetMapping("/{id}")
-//    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountId(@PathVariable Long id){
-//        return ResponseEntity.ok(transactionService.getTransactionsByAccountId(id));
-//    }
-//
-//    @GetMapping("/{id}")
-//    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountIdWhichExceedLimit(@PathVariable Long id){
-//        return ResponseEntity.ok(transactionService.getTransactionsByAccountIdWhichExceedLimit(id));
-//    }
-
-
     @GetMapping("/account/{id}")
-=======
-    @GetMapping("/{id}")
->>>>>>> Stashed changes
     public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountId(
         @PathVariable Long id,
         @RequestParam(required = false) Boolean exceededOnly) {

@@ -32,22 +32,6 @@ public class ExchangeRateController {
             @RequestParam(required = false) LocalDate date
             )
     {
-<<<<<<< Updated upstream
-         log.info("getExchangeRate from: {} to: {} on date {}", from, to, date);
-         //определение текущей даты
-            LocalDate targetDate = (date == null) ? LocalDate.now() : date;
-         Optional<ExchangeRateEntity> exchangeRateEntity = exchangeRateService.getExchangeRate(from, to, targetDate);
-         //isPresent метод класса Optional который возращает true если внутри Optional есть значение
-            //Optional != null
-         if (exchangeRateEntity.isPresent()) {
-             exchangeRateService.saveExchangeRate(exchangeRateEntity.get());
-             return ResponseEntity.ok(exchangeRateEntity.get());
-         }
-         else {
-             log.warn("No exchange rate found for from: {} to: {} on date {}", from, to, date);
-             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-         }
-=======
         if (from == null || to == null) {
             log.warn("Currency parameter is null: from={}, to={}", from, to);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -69,6 +53,7 @@ public class ExchangeRateController {
              //isPresent метод класса Optional который возращает true если внутри Optional есть значение
                 //Optional != null
              if (exchangeRateEntity.isPresent()) {
+                 exchangeRateService.saveExchangeRate(exchangeRateEntity.get());
                  return ResponseEntity.ok(exchangeRateEntity.get());
              }
              else {
@@ -82,7 +67,6 @@ public class ExchangeRateController {
             log.error("Error when getting ExchangeRate from: {} to: {}, exception name: {}", from, to, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
->>>>>>> Stashed changes
     }
 
     //метод для обновления курса валют из внешнего API
@@ -92,18 +76,9 @@ public class ExchangeRateController {
      @RequestParam String from,
      @RequestParam String to)
     {
-<<<<<<< Updated upstream
-        log.info("updateExchangeRate from: {} to: {}", from, to);
-        try{
-            //получаем сущность через метод сервиса
-            ExchangeRateEntity rateEntity = exchangeRateService.updateExchangeRateManually(from, to);
-            exchangeRateService.saveExchangeRate(rateEntity);
-            return ResponseEntity.ok(rateEntity);
-=======
         if (from == null || to == null) {
             log.warn("Currency parameter is null: from={}, to={}", from, to);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
->>>>>>> Stashed changes
         }
 
         try {
@@ -113,6 +88,7 @@ public class ExchangeRateController {
             log.info("updateExchangeRate from: {} to: {}", fromCurrency, toCurrency);
             //получаем сущность через метод сервиса
             ExchangeRateEntity rateEntity = exchangeRateService.updateExchangeRateManually(fromCurrency, toCurrency);
+            exchangeRateService.saveExchangeRate(rateEntity);
             return ResponseEntity.ok(rateEntity);
         } catch (IllegalArgumentException e) {
             log.warn("Invalid currency code: from={}, to={}", from, to);
