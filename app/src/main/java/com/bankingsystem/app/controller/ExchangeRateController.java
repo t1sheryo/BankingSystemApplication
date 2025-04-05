@@ -9,7 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.Optional;
-//TODO: разобраться что тут к чему с сохранением в бд
+
+// TODO: разобраться что тут к чему с сохранением в бд
 @Slf4j
 @RestController
 @RequestMapping("/bank/exchange-rates")
@@ -20,7 +21,6 @@ public class ExchangeRateController {
         this.exchangeRateService = exchangeRateService;
     }
 
-    //Получение информации о курсе по валютной паре и дате
     @GetMapping
     public ResponseEntity<ExchangeRateEntity> getExchangeRate(
             @RequestParam String from,
@@ -47,6 +47,7 @@ public class ExchangeRateController {
              if(date != null && date.isAfter(LocalDate.now())){
                  return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
              }
+
              //определение текущей даты
              LocalDate targetDate = (date == null) ? LocalDate.now() : date;
              Optional<ExchangeRateEntity> exchangeRateEntity = exchangeRateService.getExchangeRate(fromCurrency, toCurrency, targetDate);

@@ -8,9 +8,7 @@ import com.bankingsystem.app.enums.Currency;
 import com.bankingsystem.app.model.AccountPair;
 import com.bankingsystem.app.model.TransactionDTO;
 import com.bankingsystem.app.repository.LimitRepository;
-import com.bankingsystem.app.services.interfaces.AccountServiceInterface;
-import com.bankingsystem.app.services.interfaces.ExchangeRateServiceInterface;
-import com.bankingsystem.app.services.interfaces.LimitServiceInterface;
+import com.bankingsystem.app.services.interfaces.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,7 +19,7 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 @Slf4j
 @Component
-public class TransactionServiceHelper {
+public class TransactionServiceHelper implements TransactionServiceHelperInterface {
 
     private final LimitServiceInterface limitService;
     private final ExchangeRateServiceInterface exchangeRateService;
@@ -38,7 +36,7 @@ public class TransactionServiceHelper {
         this.exchangeRateService = exchangeRateService;
         this.accountService = accountService;
     }
-
+    @Override
     public TransactionDTO convertToDTO(TransactionEntity transactionEntity) {
         TransactionDTO transactionDTO = new TransactionDTO();
         transactionDTO.setAccountIdFrom(transactionEntity.getAccountFrom().getId());
@@ -53,7 +51,7 @@ public class TransactionServiceHelper {
         transactionDTO.setLimitCurrency(transactionEntity.getLimitCurrencyAtTime());
         return transactionDTO;
     }
-
+    @Override
     public AccountPair validateAccounts(Long accountIdFrom, Long accountIdTo) {
         AccountEntity accountFrom = accountService.getAccountById(accountIdFrom);
         AccountEntity accountTo = accountService.getAccountById(accountIdTo);
@@ -63,14 +61,14 @@ public class TransactionServiceHelper {
         }
         return new AccountPair(accountFrom, accountTo);
     }
-
+    @Override
     public LimitEntity findAndValidateLimit(Long account, Category category) {
         Optional<LimitEntity> limitOptional = limitService.getLimitByAccountIdAndCategory(account, category);
         LimitEntity limit = limitOptional.orElseThrow(() -> new IllegalArgumentException("Limit for account" + account
                 + "and category " + category + " not found"));
         return limit;
     }
-
+    @Override
     public boolean isLimitExceeded(BigDecimal sumInUsd, LimitEntity limit) {
         BigDecimal limitRemainder = limit.getLimitRemainder();
         if(limitRemainder == null)
@@ -79,7 +77,7 @@ public class TransactionServiceHelper {
         }
         return sumInUsd.compareTo(limitRemainder) > 0;
     }
-
+    @Override
     public TransactionEntity buildTransactionEntity(TransactionDTO transactionDTO, AccountPair accounts,
                                                      LimitEntity limit, boolean limitExceeded) {
         TransactionEntity transactionEntity = new TransactionEntity();
@@ -99,7 +97,7 @@ public class TransactionServiceHelper {
 
         return transactionEntity;
     }
-
+    @Override
     public void updateLimitRemainder(BigDecimal sumInUsd, LimitEntity limit) {
         BigDecimal limitRemainder = limit.getLimitRemainder();
         if(limitRemainder == null)
@@ -109,7 +107,7 @@ public class TransactionServiceHelper {
         limit.setLimitRemainder(limit.getLimitRemainder().subtract(sumInUsd));
         limitService.saveLimit(limit);
     }
-
+    @Override
     public BigDecimal convertToUSD(BigDecimal amount, Currency currency, LocalDate date) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be greater than zero");

@@ -49,16 +49,8 @@ public class ExchangeRateControllerTest {
     private static final OffsetDateTime UPDATE_TIME =
             OffsetDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC);
 
-//    @BeforeEach
-//    void setUp() {
-//        // Сбрасываем состояние мока перед каждым тестом
-//        Mockito.reset(exchangeRateService);
-//    }
-
-    // Тест для getExchangeRate()
-    // успешный случай
     @Test
-    @DisplayName("Test")
+    @DisplayName("Should return exchange rate with valid params")
     void shouldReturnExchangeRateWhenParamsAreValid() throws Exception {
         ExchangeRateEntity expectedRate = createExpectedRate(USD, EUR, LocalDate.now());
 
@@ -79,9 +71,8 @@ public class ExchangeRateControllerTest {
         verify(exchangeRateService).getExchangeRate(Currency.valueOf(USD), Currency.valueOf(EUR), VALID_DATE);
     }
 
-    // Тест для getExchangeRate()
-    // курс не найден (возвращается Optional.empty())
     @Test
+    @DisplayName("Should return NOT_FOUND status when exchange rate is missing")
     void shouldReturnNotFoundStatusWhenRateIsMissing() throws Exception {
         when(exchangeRateService.getExchangeRate
                 (Currency.USD, Currency.EUR, VALID_DATE))
@@ -96,9 +87,8 @@ public class ExchangeRateControllerTest {
         verify(exchangeRateService).getExchangeRate(Currency.valueOf(USD), Currency.valueOf(EUR), VALID_DATE);
     }
 
-    // Тест для getExchangeRate()
-    // неправильный параметр Currency
     @Test
+    @DisplayName("Should return BAD_REQUEST status when currency param is incorrect")
     void shouldReturnBadRequestStatusWhenCurrencyParamIsIncorrect() throws Exception {
         ResponseEntity<ExchangeRateEntity> actualRate =
                 exchangeRateController.getExchangeRate(INVALID_CURRENCY, EUR, VALID_DATE);
@@ -106,9 +96,8 @@ public class ExchangeRateControllerTest {
         assertThat(actualRate.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
-    // Тест для getExchangeRate()
-    // параметр Currency равен null
     @Test
+    @DisplayName("Should return BAD_REQUEST status when currency param is null")
     void shouldReturnBadRequestStatusWhenCurrencyParamIsNull() throws Exception {
         ResponseEntity<ExchangeRateEntity> actualRate =
                 exchangeRateController.getExchangeRate(null, EUR, VALID_DATE);
@@ -116,9 +105,8 @@ public class ExchangeRateControllerTest {
         assertThat(actualRate.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
-    // Тест для getExchangeRate()
-    // параметр date = LocalDate.now()
     @Test
+    @DisplayName("Should return exchange rate when date is today")
     void shouldReturnExchangeRateWhenDateIsToday() {
         ExchangeRateEntity expectedRate = createExpectedRate(USD, EUR, LocalDate.now());
 
@@ -134,9 +122,8 @@ public class ExchangeRateControllerTest {
         verify(exchangeRateService).getExchangeRate(Currency.valueOf(USD), Currency.valueOf(EUR), LocalDate.now());
     }
 
-    // Тест для getExchangeRate()
-    // рандомное выбрасывание исключение
     @Test
+    @DisplayName("Should return INTERNAL_SERVER_ERROR from service")
     void shouldReturnInternalServerErrorWhenServiceThrowsException() {
         when(exchangeRateService.getExchangeRate(Currency.valueOf(USD), Currency.valueOf(EUR), VALID_DATE))
             .thenThrow(new RuntimeException("Service error"));
@@ -147,9 +134,8 @@ public class ExchangeRateControllerTest {
         assertThat(actualRate.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // Тест для getExchangeRate()
-    // без обязательного параметра date
     @Test
+    @DisplayName("Should return exchange rate when date param is missing")
     void shouldReturnExchangeRateWhenDateParamIsMissing() throws Exception {
         ExchangeRateEntity expectedRate = createExpectedRate(USD, EUR, LocalDate.now());
 
@@ -168,9 +154,8 @@ public class ExchangeRateControllerTest {
         verify(exchangeRateService).getExchangeRate(Currency.valueOf(USD), Currency.valueOf(EUR), LocalDate.now());
     }
 
-    // Тест для getExchangeRate()
-    // date будет датой из будущего
     @Test
+    @DisplayName("Should return exchange rate when date is from future")
     void shouldReturnBadRequestWhenDateIsFromFuture() throws Exception {
         ResponseEntity<ExchangeRateEntity> actualRate =
                 exchangeRateController.getExchangeRate(USD, EUR, FUTURE_DATE);
@@ -178,9 +163,8 @@ public class ExchangeRateControllerTest {
         assertThat(actualRate.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
-    // Тест для updateExchangeRate()
-    // успешный случай
     @Test
+    @DisplayName("Should successfully update exchange rate")
     void shouldSuccessfullyUpdateExchangeRate() throws Exception {
         ExchangeRateEntity expectedRate = createExpectedRate(USD, EUR, LocalDate.now());
 
@@ -199,9 +183,8 @@ public class ExchangeRateControllerTest {
         verify(exchangeRateService).updateExchangeRateManually(Currency.valueOf(USD), Currency.valueOf(EUR));
     }
 
-    // Тест для updateExchangeRate()
-    // неудачный случай, когда сервис выбрасывает исключение
     @Test
+    @DisplayName("Should throw exception while updating exchange rate")
     void shouldThrowAnExceptionWhileUpdatingExchangeRate() throws Exception {
         when(exchangeRateService.updateExchangeRateManually(Currency.USD, Currency.EUR))
                 .thenThrow(new RuntimeException("Failed to fetch exchange rate"));
@@ -212,9 +195,8 @@ public class ExchangeRateControllerTest {
         assertThat(actualRate.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // Тест для updateExchangeRate()
-    // некорректный параметр
     @Test
+    @DisplayName("Should return BAD_REQUEST status while updating exchange rate")
     void shouldReturnBadRequestStatusWhileUpdatingExchangeRate() throws Exception {
         ResponseEntity<ExchangeRateEntity> actualRate =
                 exchangeRateController.updateExchangeRate(INVALID_CURRENCY, EUR);
@@ -222,19 +204,17 @@ public class ExchangeRateControllerTest {
         assertThat(actualRate.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
-    // Тест для updateExchangeRate()
-    // параметр Currency равен null
     @Test
-    void shouldReturnBadRequestStatusWhileUpdateExchangeRateAndCurrencyParamIsNull() throws Exception {
+    @DisplayName("Should return BAD_REQUEST status while updating exchange rate and currency param equals null")
+    void shouldReturnBadRequestStatusWhileUpdatingExchangeRateAndCurrencyParamIsNull() throws Exception {
         ResponseEntity<ExchangeRateEntity> actualRate =
                 exchangeRateController.updateExchangeRate(null, EUR);
 
         assertThat(actualRate.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
-    // Тест для getExchangeRate()
-    // рандомное выбрасывание исключение
     @Test
+    @DisplayName("Should return INTERNAL_SERVER_ERROR while updating exchange rate and service throws exception")
     void shouldReturnInternalServerErrorWhileUpdatingExchangeRateAndWhenServiceThrowsException() {
         when(exchangeRateService.updateExchangeRateManually(Currency.valueOf(USD), Currency.valueOf(EUR)))
             .thenThrow(new RuntimeException("Service error"));

@@ -29,9 +29,12 @@ public class TransactionController {
     @PostMapping
     public ResponseEntity<TransactionEntity> createTransaction(@Valid @RequestBody TransactionDTO transactionDTO)
     {
+        if (transactionDTO == null) {
+            throw new IllegalArgumentException("Transaction DTO cannot be null");
+        }
         log.info("create Transaction for DTO: {}", transactionDTO);
         if(accountService.getAccountById(transactionDTO.getAccountIdFrom()) == null ||
-        accountService.getAccountById(transactionDTO.getAccountIdTo()) == null)
+            accountService.getAccountById(transactionDTO.getAccountIdTo()) == null)
         {
             log.error("One or both accounts not found: accountIdFrom={}, accountIdTo={}",
                     transactionDTO.getAccountIdFrom(),transactionDTO.getAccountIdTo());

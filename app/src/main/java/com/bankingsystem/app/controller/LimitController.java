@@ -26,11 +26,13 @@ public class LimitController {
     }
 
     @PostMapping
-    public ResponseEntity<LimitEntity> createLimit(@Valid  @RequestBody LimitRequest limitRequest) {
+    public ResponseEntity<LimitEntity> createLimit(@Valid @RequestBody LimitRequest limitRequest) {
         log.info("Create Limit Request: {}", limitRequest);
         if(accountService.getAccountById(limitRequest.getAccountId()) == null) {
             log.error("Account with id {} not found", limitRequest.getAccountId());
-            throw new IllegalArgumentException("Account with id " + limitRequest.getAccountId() + " not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            // TODO: глянуть что такое ProblemDetail,
+            //  потому что новая штука
         }
         LimitEntity limit = limitService.setLimit(limitRequest);
         // Возращаем ответ в виде ResponseEntity со
@@ -57,7 +59,7 @@ public class LimitController {
         //проверка валидности id при некорректном бросаем exception
         if(accountId == null || accountId <= 0) {
             log.error("Account Id is not valid");
-           throw new IllegalArgumentException("Account Id is not valid");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
         List<LimitResponse> limitsById = limitService.getLimitsByAccountId(accountId);
         log.info("Found {} Limits", limitsById.size());
