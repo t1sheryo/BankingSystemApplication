@@ -32,19 +32,17 @@ public class TransactionController {
         if (transactionDTO == null) {
             throw new IllegalArgumentException("Transaction DTO cannot be null");
         }
+
         log.info("create Transaction for DTO: {}", transactionDTO);
+
         if(accountService.getAccountById(transactionDTO.getAccountIdFrom()) == null ||
             accountService.getAccountById(transactionDTO.getAccountIdTo()) == null)
         {
-            log.error("One or both accounts not found: accountIdFrom={}, accountIdTo={}",
-                    transactionDTO.getAccountIdFrom(),transactionDTO.getAccountIdTo());
             throw new IllegalArgumentException("One or both accounts not found");
         }
+
         TransactionEntity transaction= transactionService.createTransaction(transactionDTO);
-        // Возвращаем полный ответ со статусом
-        // - Статус-кодом 201 Created (для создания ресурса).
-        // - Заголовком Location, указывающим URL новой транзакции.
-        // - Телом ответа, содержащим созданный объект TransactionEntity.
+
         return ResponseEntity
                  .status(HttpStatus.CREATED)
                  .header("Location", "/bank/transactions/" + transaction.getId())
@@ -53,18 +51,19 @@ public class TransactionController {
 
     @GetMapping("/exceeded")
     public ResponseEntity<List<TransactionDTO>> getTransactionsExceededLimit(@RequestParam Long accountId) {
-        log.info("get transactions exceeded limit for accountId: {}", accountId);
         if(accountId == null || accountId <= 0)
         {
-            log.error("Invalid accountId={}", accountId);
             throw new IllegalArgumentException("Invalid accountId");
         }
+
         if(accountService.getAccountById(accountId) == null)
         {
-            log.warn("Account {} not found", accountId);
+            // FIXME: блять. тут вообще только логи были сука
         }
+
         List<TransactionDTO> exceededTransactions = transactionService.getTransactionsByAccountIdWhichExceedLimit(accountId);
         log.info("Exceeded transactions: {}", exceededTransactions);
+
         return ResponseEntity.ok(exceededTransactions);
     }
 
