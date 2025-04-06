@@ -9,10 +9,7 @@ import com.bankingsystem.app.model.AccountPair;
 import com.bankingsystem.app.model.TransactionDTO;
 import com.bankingsystem.app.repository.LimitRepository;
 import com.bankingsystem.app.repository.TransactionRepository;
-import com.bankingsystem.app.services.interfaces.AccountServiceInterface;
-import com.bankingsystem.app.services.interfaces.ExchangeRateServiceInterface;
-import com.bankingsystem.app.services.interfaces.LimitServiceInterface;
-import com.bankingsystem.app.services.interfaces.TransactionServiceInterface;
+import com.bankingsystem.app.services.interfaces.*;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,14 +27,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TransactionService implements TransactionServiceInterface {
     private final TransactionRepository transactionRepository;
-    private final TransactionServiceHelper transactionServiceHelper;
+    private final TransactionServiceHelperInterface transactionServiceHelper;
 
     //  Autowired делает автоматическую инъекцию зависимостей(dependency injection)
     //   Аннотация @Autowired говорит Spring: "Найди бины типа TransactionRepository и LimitService
     //    в контексте приложения и передай их в этот конструктор
     @Autowired
     public TransactionService(TransactionRepository transactionRepository,
-                              TransactionServiceHelper transactionServiceHelper) {
+                              TransactionServiceHelperInterface transactionServiceHelper) {
         this.transactionRepository = transactionRepository;
         this.transactionServiceHelper = transactionServiceHelper;
     }
@@ -46,7 +43,6 @@ public class TransactionService implements TransactionServiceInterface {
     @Override
     @Transactional
     public TransactionEntity createTransaction(TransactionDTO transactionDTO) {
-
         log.info("Creating transaction for accountIdFrom: {}, accountIdTo: {}, category: {}, sum: {}, currency: {}",
                 transactionDTO.getAccountIdFrom(), transactionDTO.getAccountIdTo(),
                 transactionDTO.getExpenseCategory(), transactionDTO.getSum(), transactionDTO.getCurrency());
@@ -77,6 +73,7 @@ public class TransactionService implements TransactionServiceInterface {
     @Override
     public List<TransactionDTO> getAllTransactions() {
         List<TransactionEntity> transactions = transactionRepository.findAll();
+
         return transactions.stream()
                 .map(transactionServiceHelper::convertToDTO)
                 .collect(Collectors.toList());

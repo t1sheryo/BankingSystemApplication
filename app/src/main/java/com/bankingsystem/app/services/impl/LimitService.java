@@ -43,12 +43,15 @@ public class LimitService implements LimitServiceInterface {
     // ничего не будет сохранено (rollback).
     public LimitEntity setLimit(LimitRequest limit) {
         if(limit.getLimit().compareTo(BigDecimal.ZERO) <= 0) {
+            log.error("Limit must be greater than zero");
             throw new IllegalArgumentException("Limit cannot be less than 0");
         }
 
         OffsetDateTime now = OffsetDateTime.now();
         LimitEntity existingLimit = limitRepository.getLimitByAccountIdAndCategory(limit.getAccountId(), limit.getCategory());
+
         if(existingLimit == null) {
+            log.error("Limit not found for account id {} ", limit.getAccountId());
             throw new IllegalStateException("Limit not found for account id " + limit.getAccountId());
         }
 
@@ -81,43 +84,48 @@ public class LimitService implements LimitServiceInterface {
         existingLimit.setLimitRemainder(prevRemainder.add(limit.getLimit().subtract(existingLimit.getLimitSum())));
         existingLimit.setLimitCurrencyShortName(Currency.USD);
         existingLimit.setLimitDateTime(now);
+        log.info("Limit created: " + existingLimit);
         return limitRepository.save(existingLimit);
     }
 
     @Override
     public List<LimitResponse> getLimitsByAccountId(Long accountId) {
         List<LimitEntity> limits = limitRepository.findByAccountId(accountId);
+        log.info("Limits retrieved: {} ", limits);
 
         return limits.stream()
-                .map(this::convertToLimitResponse)
+                .map(this::convertLimitEntityToLimitResponse)
                 .collect(Collectors.toList());
     }
     @Override
     public Optional<LimitEntity> getLimitByAccountIdAndCategory(Long accountId, Category category) {
-        return limitRepository.findFirstByAccountIdAndCategoryOrderByLimitDateTimeDesc(accountId,category);
+        log.info("getLimitByAccountIdAndCategory: accountId: {} category: {}", accountId, category);
+        return limitRepository.findFirstByAccountIdAndCategoryOrderByLimitDateTimeDesc(accountId, category);
     }
 
     @Override
-    public LimitEntity getLimitByDBId(Long DBId){
+    public LimitEntity getLimitByDBId(Long DBId) {
+        log.info("getLimitByDBId: DBId: {}", DBId);
         return limitRepository.findById(DBId).orElse(null);
     }
 
     @Override
     public List<LimitResponse> getAllLimits() {
         List<LimitEntity> limits = limitRepository.findAll();
+        log.info("Limits retrieved: " + limits);
+
         return limits.stream()
-                .map(this::convertToLimitResponse)
+                .map(this::convertLimitEntityToLimitResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
     public LimitEntity saveLimit(LimitEntity limit) {
+        log.info("Saving limit {}", limit);
         return limitRepository.save(limit);
     }
 
-    // вспомогательный метод для преобразования
-    // LimitEntity в LimitResponse
-    private LimitResponse convertToLimitResponse(LimitEntity limitEntity) {
+    private LimitResponse convertLimitEntityToLimitResponse(LimitEntity limitEntity) {
         if(limitEntity.getAccount() == null) {
             throw new IllegalArgumentException("Account is not set for limitId " + limitEntity.getId());
         }

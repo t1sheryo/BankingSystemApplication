@@ -48,8 +48,8 @@ public class TransactionControllerTest {
     @Test
     @DisplayName("Should create transaction successfully")
     void shouldCreateTransactionSuccessfully() {
-        TransactionDTO dto = createTransactionDTO(VALID_ACCOUNT_ID_FROM, VALID_ACCOUNT_ID_TO);
-        TransactionEntity entity = createTransactionEntity(TRANSACTION_ID);
+        TransactionDTO dto = createTransactionDTO();
+        TransactionEntity entity = createTransactionEntity();
 
         when(accountService.getAccountById(VALID_ACCOUNT_ID_FROM)).thenReturn(new AccountEntity());
         when(accountService.getAccountById(VALID_ACCOUNT_ID_TO)).thenReturn(new AccountEntity());
@@ -59,7 +59,10 @@ public class TransactionControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getHeaders().getFirst("Location")).isEqualTo("/bank/transactions/" + TRANSACTION_ID);
-        assertThat(response.getBody()).isEqualTo(entity);
+        assertThat(response.getBody())
+                .usingRecursiveComparison()
+                .isEqualTo(entity);
+
         verify(transactionService, times(1)).createTransaction(dto);
     }
 
@@ -77,20 +80,21 @@ public class TransactionControllerTest {
     @Test
     @DisplayName("Should throw exception when account not found")
     void shouldThrowExceptionWhenAccountNotFound() {
-        TransactionDTO dto = createTransactionDTO(VALID_ACCOUNT_ID_FROM, INVALID_ACCOUNT_ID);
+        TransactionDTO dto = createTransactionDTO();
 
         when(accountService.getAccountById(VALID_ACCOUNT_ID_FROM)).thenReturn(null);
 
         assertThatThrownBy(() -> controller.createTransaction(dto))
                 .isInstanceOf(IllegalArgumentException.class).
                 hasMessage("One or both accounts not found");
+
         verify(transactionService, never()).createTransaction(dto);
     }
 
    @Test
    @DisplayName("Should return exceeded transactions for valid accountId")
     void shouldReturnExceededTransactionsForValidAccountId() {
-        TransactionDTO dto = createTransactionDTO(VALID_ACCOUNT_ID_FROM, VALID_ACCOUNT_ID_TO);
+        TransactionDTO dto = createTransactionDTO();
         List<TransactionDTO> exceededTransactions = Collections.singletonList(dto);
 
         when(accountService.getAccountById(VALID_ACCOUNT_ID_FROM)).thenReturn(new AccountEntity());
@@ -99,7 +103,10 @@ public class TransactionControllerTest {
 
        ResponseEntity<List<TransactionDTO>> response = controller.getTransactionsExceededLimit(VALID_ACCOUNT_ID_FROM);
        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-       assertThat(response.getBody()).isEqualTo(exceededTransactions);
+       assertThat(response.getBody())
+               .usingRecursiveComparison()
+               .isEqualTo(exceededTransactions);
+
        verify(transactionService, times(1)).getTransactionsByAccountIdWhichExceedLimit(VALID_ACCOUNT_ID_FROM);
 
    }
@@ -115,18 +122,19 @@ public class TransactionControllerTest {
         verify(transactionService, never()).getTransactionsByAccountIdWhichExceedLimit(any());
     }
 
-    //all transactions метод
     @Test
     @DisplayName("Should return all transactions")
     void shouldReturnAllTransactions() {
-        TransactionDTO dto = createTransactionDTO(VALID_ACCOUNT_ID_FROM, VALID_ACCOUNT_ID_TO);
+        TransactionDTO dto = createTransactionDTO();
         List<TransactionDTO> transactions = Collections.singletonList(dto);
 
         when(transactionService.getAllTransactions()).thenReturn(transactions);
         ResponseEntity<List<TransactionDTO>> response = controller.getAllTransactions();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(transactions);
+        assertThat(response.getBody())
+                .usingRecursiveComparison()
+                .isEqualTo(transactions);
 
         verify(transactionService, times(1)).getAllTransactions();
     }
@@ -146,14 +154,16 @@ public class TransactionControllerTest {
     @Test
     @DisplayName("Should return transactions by category")
     void shouldReturnTransactionsByCategory() {
-        TransactionDTO transactionDTO = createTransactionDTO(VALID_ACCOUNT_ID_FROM, VALID_ACCOUNT_ID_TO);
+        TransactionDTO transactionDTO = createTransactionDTO();
         List<TransactionDTO> transactions = Collections.singletonList(transactionDTO);
 
         when(transactionService.getTransactionsByCategory(TEST_CATEGORY)).thenReturn(transactions);
         ResponseEntity<List<TransactionDTO>> response = controller.getTransactionsByCategory(TEST_CATEGORY);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(transactions);
+        assertThat(response.getBody())
+                .usingRecursiveComparison()
+                .isEqualTo(transactions);
 
         verify(transactionService, times(1)).getTransactionsByCategory(TEST_CATEGORY);
     }
@@ -161,7 +171,7 @@ public class TransactionControllerTest {
     @Test
     @DisplayName("Should return transactions by Account Id")
     void shouldReturnTransactionsByAccountId() {
-        TransactionDTO transactionDTO = createTransactionDTO(VALID_ACCOUNT_ID_FROM, INVALID_ACCOUNT_ID);
+        TransactionDTO transactionDTO = createTransactionDTO();
         List<TransactionDTO> transactions = Collections.singletonList(transactionDTO);
 
         when(transactionService.getTransactionsByAccountId(VALID_ACCOUNT_ID_FROM)).thenReturn(transactions);
@@ -169,9 +179,9 @@ public class TransactionControllerTest {
         ResponseEntity<List<TransactionDTO>> response = controller.getTransactionsByAccountId(VALID_ACCOUNT_ID_FROM,false);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(transactions);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().size()).isEqualTo(1);
+        assertThat(response.getBody())
+                .usingRecursiveComparison()
+                .isEqualTo(transactions);
 
         verify(transactionService, times(1)).getTransactionsByAccountId(VALID_ACCOUNT_ID_FROM);
     }
@@ -179,7 +189,7 @@ public class TransactionControllerTest {
     @Test
     @DisplayName("Should return exceeded transactions when exceeded is true")
     void shouldReturnExceededTransactionsWhenExceededIsTrue() {
-        TransactionDTO transactionDTO = createTransactionDTO(VALID_ACCOUNT_ID_FROM, VALID_ACCOUNT_ID_TO);
+        TransactionDTO transactionDTO = createTransactionDTO();
         List<TransactionDTO> exceededTransactions = Collections.singletonList(transactionDTO);
 
         when(transactionService.getTransactionsByAccountIdWhichExceedLimit(VALID_ACCOUNT_ID_FROM)).thenReturn(exceededTransactions);
@@ -187,17 +197,17 @@ public class TransactionControllerTest {
         ResponseEntity<List<TransactionDTO>> response = controller.getTransactionsByAccountId(VALID_ACCOUNT_ID_FROM,true);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(exceededTransactions);
-        assertThat(response.getBody()).isNotNull().hasSize(1);
-        assertThat(response.getBody().size()).isEqualTo(1);
+        assertThat(response.getBody())
+                .usingRecursiveComparison()
+                .isEqualTo(exceededTransactions);
 
         verify(transactionService, times(1)).getTransactionsByAccountIdWhichExceedLimit(VALID_ACCOUNT_ID_FROM);
     }
-    private TransactionDTO createTransactionDTO(Long accountIdFrom, Long accountIdTo)
+    private TransactionDTO createTransactionDTO()
     {
         TransactionDTO transactionDTO = new TransactionDTO();
-        transactionDTO.setAccountIdFrom(accountIdFrom);
-        transactionDTO.setAccountIdTo(accountIdTo);
+        transactionDTO.setAccountIdFrom(VALID_ACCOUNT_ID_FROM);
+        transactionDTO.setAccountIdTo(VALID_ACCOUNT_ID_TO);
         transactionDTO.setCurrency(TEST_CURRENCY);
         transactionDTO.setExpenseCategory(TEST_CATEGORY);
         transactionDTO.setSum(TEST_SUM);
@@ -208,10 +218,10 @@ public class TransactionControllerTest {
         transactionDTO.setLimitCurrency(null);
         return transactionDTO;
     }
-    private TransactionEntity createTransactionEntity(Long id)
+    private TransactionEntity createTransactionEntity()
     {
         TransactionEntity transactionEntity = new TransactionEntity();
-        transactionEntity.setId(id);
+        transactionEntity.setId(TRANSACTION_ID);
         return transactionEntity;
     }
 }

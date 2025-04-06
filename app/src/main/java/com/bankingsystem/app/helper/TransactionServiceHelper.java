@@ -1,4 +1,4 @@
-package com.bankingsystem.app.services.impl;
+package com.bankingsystem.app.helper;
 
 import com.bankingsystem.app.entity.AccountEntity;
 import com.bankingsystem.app.entity.LimitEntity;
@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Optional;
+
 @Slf4j
 @Component
 public class TransactionServiceHelper implements TransactionServiceHelperInterface {
@@ -29,13 +30,13 @@ public class TransactionServiceHelper implements TransactionServiceHelperInterfa
     public TransactionServiceHelper(
             LimitServiceInterface limitService,
             ExchangeRateServiceInterface exchangeRateService,
-            AccountServiceInterface accountService,
-            LimitRepository limitRepository
+            AccountServiceInterface accountService
     ){
         this.limitService = limitService;
         this.exchangeRateService = exchangeRateService;
         this.accountService = accountService;
     }
+
     @Override
     public TransactionDTO convertToDTO(TransactionEntity transactionEntity) {
         TransactionDTO transactionDTO = new TransactionDTO();
@@ -71,8 +72,7 @@ public class TransactionServiceHelper implements TransactionServiceHelperInterfa
     @Override
     public boolean isLimitExceeded(BigDecimal sumInUsd, LimitEntity limit) {
         BigDecimal limitRemainder = limit.getLimitRemainder();
-        if(limitRemainder == null)
-        {
+        if(limitRemainder == null) {
             throw new IllegalStateException("Limit remainder is null for limitId: " + limit.getId());
         }
         return sumInUsd.compareTo(limitRemainder) > 0;
@@ -100,8 +100,7 @@ public class TransactionServiceHelper implements TransactionServiceHelperInterfa
     @Override
     public void updateLimitRemainder(BigDecimal sumInUsd, LimitEntity limit) {
         BigDecimal limitRemainder = limit.getLimitRemainder();
-        if(limitRemainder == null)
-        {
+        if(limitRemainder == null) {
             throw new IllegalStateException("Limit remainder is null for limitId: " + limit.getId());
         }
         limit.setLimitRemainder(limit.getLimitRemainder().subtract(sumInUsd));
@@ -116,17 +115,16 @@ public class TransactionServiceHelper implements TransactionServiceHelperInterfa
         if (currency.equals(Currency.USD)) {
             return amount;
         }
-        //var ExchangeRate == Optional<ExchangeRateEntity>
-        //var пишем када очевидно что слева за возращаемый тип
+
         var exchangeRate = exchangeRateService.getExchangeRate(currency, Currency.USD, date);
         if (exchangeRate.isEmpty()) {
             log.error("Exchange rate is not found for {}/USD on {}", currency, date);
             throw new IllegalStateException("Exchange rate is not found for " + currency + " on " + date);
         }
+
         BigDecimal rate = exchangeRate.get().getRate();
         BigDecimal amountInUsd = amount.multiply(rate);
         log.info("Converted {} {} to {} USD using rate {}", amount, currency, amountInUsd, rate);
         return amountInUsd;
-
     }
 }

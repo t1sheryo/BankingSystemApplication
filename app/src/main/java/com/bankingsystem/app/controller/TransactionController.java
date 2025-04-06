@@ -36,8 +36,7 @@ public class TransactionController {
         log.info("create Transaction for DTO: {}", transactionDTO);
 
         if(accountService.getAccountById(transactionDTO.getAccountIdFrom()) == null ||
-            accountService.getAccountById(transactionDTO.getAccountIdTo()) == null)
-        {
+            accountService.getAccountById(transactionDTO.getAccountIdTo()) == null) {
             throw new IllegalArgumentException("One or both accounts not found");
         }
 
@@ -51,30 +50,34 @@ public class TransactionController {
 
     @GetMapping("/exceeded")
     public ResponseEntity<List<TransactionDTO>> getTransactionsExceededLimit(@RequestParam Long accountId) {
-        if(accountId == null || accountId <= 0)
-        {
+        if(accountId == null || accountId <= 0) {
             throw new IllegalArgumentException("Invalid accountId");
         }
 
-        if(accountService.getAccountById(accountId) == null)
-        {
-            // FIXME: блять. тут вообще только логи были сука
+        if(accountService.getAccountById(accountId) == null) {
+            log.warn("Account {} not found", accountId);
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .build();
         }
 
         List<TransactionDTO> exceededTransactions = transactionService.getTransactionsByAccountIdWhichExceedLimit(accountId);
         log.info("Exceeded transactions: {}", exceededTransactions);
 
-        return ResponseEntity.ok(exceededTransactions);
+        return ResponseEntity
+                .ok(exceededTransactions);
     }
 
     @GetMapping
     public ResponseEntity<List<TransactionDTO>> getAllTransactions(){
-        return ResponseEntity.ok(transactionService.getAllTransactions());
+        return ResponseEntity
+                .ok(transactionService.getAllTransactions());
     }
 
     @GetMapping("/{category}")
     public ResponseEntity<List<TransactionDTO>> getTransactionsByCategory(@PathVariable Category category){
-        return ResponseEntity.ok(transactionService.getTransactionsByCategory(category));
+        return ResponseEntity
+                .ok(transactionService.getTransactionsByCategory(category));
     }
 
     @GetMapping("/account/{id}")
@@ -83,8 +86,10 @@ public class TransactionController {
         @RequestParam(required = false) Boolean exceededOnly) {
 
         if (Boolean.TRUE.equals(exceededOnly)) {
-            return ResponseEntity.ok(transactionService.getTransactionsByAccountIdWhichExceedLimit(id));
+            return ResponseEntity
+                    .ok(transactionService.getTransactionsByAccountIdWhichExceedLimit(id));
         }
-        return ResponseEntity.ok(transactionService.getTransactionsByAccountId(id));
+        return ResponseEntity
+                .ok(transactionService.getTransactionsByAccountId(id));
     }
 }

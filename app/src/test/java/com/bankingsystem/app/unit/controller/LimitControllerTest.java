@@ -53,7 +53,7 @@ public class LimitControllerTest {
 
     @Test
     @DisplayName("Should create limit successfully")
-    void shouldCreateLimitSuccessfully() throws Exception {
+    void shouldCreateLimitSuccessfully() {
         LimitRequest limitRequest = createLimitRequest();
         LimitEntity expectedLimitEntity = createLimitEntity();
         AccountEntity accountEntity = LIMIT_ACCOUNT;
@@ -77,7 +77,7 @@ public class LimitControllerTest {
 
     @Test
     @DisplayName("Should return NOT_FOUND status with limit")
-    void shouldReturnNotFoundStatus() throws Exception {
+    void shouldReturnNotFoundStatus() {
         LimitRequest limitRequest = createLimitRequest();
 
         when(accountService.getAccountById(ACCOUNT_ID)).thenReturn(null);
@@ -88,13 +88,14 @@ public class LimitControllerTest {
         assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(actualResponse.getHeaders().isEmpty()).isTrue();
         assertThat(actualResponse.getBody()).isNull();
+
         verify(accountService).getAccountById(ACCOUNT_ID);
         verify(limitService, never()).setLimit(any());
     }
 
     @Test
     @DisplayName("Should return all limits by id successfully")
-    void shouldReturnAllLimitsByAccountIdSuccessfully() throws Exception {
+    void shouldReturnAllLimitsByAccountIdSuccessfully() {
         List<LimitResponse> expectedList = createListOfLimitResponses();
 
         when(limitService.getLimitsByAccountId(ACCOUNT_ID)).thenReturn(expectedList);
@@ -103,13 +104,16 @@ public class LimitControllerTest {
                 limitController.getAllLimitsByAccountId(ACCOUNT_ID);
 
         assertThat(actualList.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(expectedList).isEqualTo(actualList.getBody());
+        assertThat(expectedList)
+                .usingRecursiveComparison()
+                .isEqualTo(actualList.getBody());
+
         verify(limitService).getLimitsByAccountId(ACCOUNT_ID);
     }
 
     @Test
     @DisplayName("Should return BAD_REQUEST status when account id is null")
-    void shouldReturnBadRequestStatusWhenAccountIdEqualsNull() throws Exception {
+    void shouldReturnBadRequestStatusWhenAccountIdEqualsNull() {
         Long accountId = null;
 
         ResponseEntity<List<LimitResponse>> actualResponse =
@@ -117,13 +121,14 @@ public class LimitControllerTest {
 
         assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(actualResponse.getBody()).isNull();
+
         verify(accountService, never()).getAccountById(accountId);
         verify(limitService, never()).setLimit(any());
     }
 
     @Test
     @DisplayName("Should return BAD_REQUEST status when account id is less than 0")
-    void shouldReturnBadRequestStatusWhenAccountIdIsLessThanZero() throws Exception {
+    void shouldReturnBadRequestStatusWhenAccountIdIsLessThanZero() {
         Long accountId = -1L;
 
         ResponseEntity<List<LimitResponse>> actualResponse =
@@ -131,13 +136,14 @@ public class LimitControllerTest {
 
         assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(actualResponse.getBody()).isNull();
+
         verify(accountService, never()).getAccountById(accountId);
         verify(limitService, never()).setLimit(any());
     }
 
     @Test
     @DisplayName("Should return BAD_REQUEST status when account id is 0")
-    void shouldReturnBadRequestStatusWhenAccountIdEqualsZero() throws Exception {
+    void shouldReturnBadRequestStatusWhenAccountIdEqualsZero() {
         Long accountId = 0L;
 
         ResponseEntity<List<LimitResponse>> actualResponse =
@@ -145,13 +151,14 @@ public class LimitControllerTest {
 
         assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(actualResponse.getBody()).isNull();
+
         verify(accountService, never()).getAccountById(accountId);
         verify(limitService, never()).setLimit(any());
     }
 
     @Test
     @DisplayName("Should return empty list of limits because no limits by id were found")
-    void shouldReturnEmptyListBecauseLimitsWereNotFound() throws Exception {
+    void shouldReturnEmptyListBecauseLimitsWereNotFound() {
         List<LimitResponse> expectedList = Collections.emptyList();
 
         when(limitService.getLimitsByAccountId(ACCOUNT_ID))
@@ -161,13 +168,16 @@ public class LimitControllerTest {
                 limitController.getAllLimitsByAccountId(ACCOUNT_ID);
 
         assertThat(actualList.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(actualList.getBody()).isEqualTo(expectedList);
+        assertThat(actualList.getBody())
+                .usingRecursiveComparison()
+                .isEqualTo(expectedList);
+
         verify(limitService).getLimitsByAccountId(ACCOUNT_ID);
     }
 
     @Test
     @DisplayName("Should return all limits")
-    void shouldReturnListOfLimitsSuccessfully() throws Exception {
+    void shouldReturnListOfLimitsSuccessfully() {
         List<LimitResponse> expectedList = createListOfLimitResponses();
 
         when(limitService.getAllLimits())
@@ -177,13 +187,16 @@ public class LimitControllerTest {
                 limitController.getAllLimits();
 
         assertThat(actualList.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(actualList.getBody()).isEqualTo(expectedList);
+        assertThat(actualList.getBody())
+                .usingRecursiveComparison()
+                .isEqualTo(expectedList);
+
         verify(limitService).getAllLimits();
     }
 
     @Test
     @DisplayName("Should return empty list because no limits were found")
-    void shouldReturnEmptyListOfLimits() throws Exception {
+    void shouldReturnEmptyListOfLimits() {
         List<LimitResponse> expectedList = Collections.emptyList();
 
         when(limitService.getAllLimits())
@@ -193,7 +206,10 @@ public class LimitControllerTest {
                 limitController.getAllLimits();
 
         assertThat(actualList.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(actualList.getBody()).isEqualTo(expectedList);
+        assertThat(actualList.getBody())
+                .usingRecursiveComparison()
+                .isEqualTo(expectedList);
+
         verify(limitService).getAllLimits();
     }
 

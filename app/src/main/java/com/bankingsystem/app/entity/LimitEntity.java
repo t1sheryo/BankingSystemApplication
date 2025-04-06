@@ -4,10 +4,7 @@ import com.bankingsystem.app.enums.Category;
 import com.bankingsystem.app.enums.Currency;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -15,6 +12,7 @@ import java.time.OffsetDateTime;
 @Entity
 @Getter
 @Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "limits", indexes = {

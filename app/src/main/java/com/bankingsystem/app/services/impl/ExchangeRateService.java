@@ -38,6 +38,10 @@ import java.util.Optional;
 // String url = "https://api.twelvedata.com/price?symbol=USD/EUR&apikey=your_api_key";
 // String response = restTemplate.getForObject(url, String.class);
 
+// FIXME : я тут сделал, чтобы при какой либо ошибке выбрасывало исключение
+//  однако при таком подходе если произойдет одна ошибка или неуспешное действие
+//  то все приложение ложиться. можно продумать, если надо, как сделать
+//  чтобы при ошибке приложение продолжало работать и как то уведомляло об ошибке
 
 @Slf4j
 @Service
@@ -81,50 +85,36 @@ public class ExchangeRateService implements ExchangeRateServiceInterface {
 
     @Override
     public ExchangeRateEntity updateExchangeRateManually(Currency currencyFrom, Currency currencyTo) {
-        log.info("Updating exchange rate manually for {}/{}", currencyFrom, currencyTo);
+        String url = String.format("%s/exchange_rate?symbol=%s/%s&apikey=%s",
+                twelveDataConfig.getApiUrl(), currencyFrom, currencyTo, twelveDataConfig.getApiKey());
 
-        try {
-            // Формируем URL запроса
-            String url = String.format("%s/exchange_rate?symbol=%s/%s&apikey=%s",
-                    twelveDataConfig.getApiUrl(), currencyFrom, currencyTo, twelveDataConfig.getApiKey());
+        log.debug("Making request to URL: {}", url);
 
-            log.debug("Making request to URL: {}", url);
+        // Делаем запрос и автоматически преобразуем JSON в DTO
+        ExchangeRateDTO response = restTemplate.getForObject(url, ExchangeRateDTO.class);
 
-            // Делаем запрос и автоматически преобразуем JSON в DTO
-            ExchangeRateDTO response = restTemplate.getForObject(url, ExchangeRateDTO.class);
-
-            // Проверяем ответ
-            if (response == null) {
-                throw new RuntimeException("Empty response from API");
-            }
-
-            log.debug("Received rate: {}", response.getRate());
-
-            // Получаем курс (используем value если есть, иначе rate)
-            BigDecimal rate = BigDecimal.valueOf(response.getRate());
-
-            // Создаем или обновляем запись в БД
-            LocalDate today = LocalDate.now();
-            ExchangeRateEntity entity = exchangeRateRepository
-                    .findByIdAndRateDate(
-                        new ExchangeRateCompositePrimaryKey(currencyFrom, currencyTo),
-                        today)
-                    .orElseGet(ExchangeRateEntity::new);
-
-            entity.setId(new ExchangeRateCompositePrimaryKey(currencyFrom, currencyTo));
-            entity.setRateDate(today);
-            entity.setRate(rate);
-
-            return exchangeRateRepository.save(entity);
-
-        } catch (RestClientException e) {
-            log.error("API request failed for {}/{}: {}", currencyFrom, currencyTo, e.getMessage());
-            throw new RuntimeException("Failed to get exchange rate from API", e);
-        } catch (Exception e) {
-            log.error("Unexpected error in updateExchangeRateManually for {}/{}: {}",
-                    currencyFrom, currencyTo, e.getMessage());
-            throw new RuntimeException("Exchange rate update failed", e);
+        if (response == null) {
+            throw new RuntimeException("Empty response from API");
         }
+
+        log.debug("Received rate: {}", response.getRate());
+
+        // Получаем курс (используем value если есть, иначе rate)
+        BigDecimal rate = response.getRate();
+
+        // Создаем или обновляем запись в БД
+        LocalDate today = LocalDate.now();
+        ExchangeRateEntity entity = exchangeRateRepository
+                .findByIdAndRateDate(
+                    new ExchangeRateCompositePrimaryKey(currencyFrom, currencyTo),
+                    today)
+                .orElseGet(ExchangeRateEntity::new);
+
+        entity.setId(new ExchangeRateCompositePrimaryKey(currencyFrom, currencyTo));
+        entity.setRateDate(today);
+        entity.setRate(rate);
+
+        return exchangeRateRepository.save(entity);
     }
 
     // автоматическое обновление курсов раз в указанную единицу времени
@@ -132,25 +122,23 @@ public class ExchangeRateService implements ExchangeRateServiceInterface {
     @Override
     public void updateExchangeRateAutomatically() {
         for (CurrencyPair pair : CURRENCY_PAIRS) {
-            log.info("Processing pair: {}/{}", pair.from(), pair.to());
-            try {
-                updateExchangeRateManually(pair.from(), pair.to());
-                log.info("Updated exchange rate for {}/{}", pair.from(), pair.to());
-            } catch (Exception e) {
-                log.error("Failed to update {}/{}: ", pair.from(), pair.to(), e);
-            }
+            updateExchangeRateManually(pair.getCurrencyFrom(), pair.getCurrencyTo());
         }
     }
 
-    // Метод для получения курса из базы
     @Override
     public Optional<ExchangeRateEntity> getExchangeRate(Currency from, Currency to, LocalDate date) {
         ExchangeRateCompositePrimaryKey key = new ExchangeRateCompositePrimaryKey(from, to);
+        Optional<ExchangeRateEntity> exchangeRateEntity =
+                exchangeRateRepository.findByIdAndRateDate(key, date);
+        log.info("Exchange rate from {} to {} : {}", from, to, exchangeRateEntity);
+
         return exchangeRateRepository.findByIdAndRateDate(key, date);
     }
 
     @Override
     public void saveExchangeRate(ExchangeRateEntity exchangeRate) {
+        log.info("Saving exchange rate : {}", exchangeRate);
         exchangeRateRepository.save(exchangeRate);
     }
 }

@@ -27,16 +27,13 @@ public class LimitController {
 
     @PostMapping
     public ResponseEntity<LimitEntity> createLimit(@Valid @RequestBody LimitRequest limitRequest) {
-        log.info("Create Limit Request: {}", limitRequest);
-
         if(accountService.getAccountById(limitRequest.getAccountId()) == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            // TODO: глянуть что такое ProblemDetail,
-            //  потому что новая штука
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .build();
         }
 
         LimitEntity limit = limitService.setLimit(limitRequest);
-
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .header("Location" ,"/bank/limits/" + limit.getId())
@@ -46,17 +43,20 @@ public class LimitController {
     @GetMapping
     public ResponseEntity<List<LimitResponse>> getAllLimits() {
         List<LimitResponse> limits = limitService.getAllLimits();
-        return ResponseEntity.ok(limits);
+        return ResponseEntity
+                .ok(limits);
     }
 
     @GetMapping("/account")
     public ResponseEntity<List<LimitResponse>> getAllLimitsByAccountId(@RequestParam Long accountId) {
         if(accountId == null || accountId <= 0) {
-            log.error("Account Id is not valid");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .build();
         }
 
         List<LimitResponse> limitsById = limitService.getLimitsByAccountId(accountId);
-        return ResponseEntity.ok(limitsById);
+        return ResponseEntity
+                .ok(limitsById);
     }
 }

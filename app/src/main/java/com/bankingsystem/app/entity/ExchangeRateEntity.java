@@ -10,6 +10,7 @@ import java.time.OffsetDateTime;
 @Entity
 @Setter
 @Getter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 // uniqueConstraints добавляет ограничение уникальности для столбцов

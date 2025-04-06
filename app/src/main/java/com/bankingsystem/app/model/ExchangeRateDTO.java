@@ -7,5 +7,5 @@ import java.math.BigDecimal;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ExchangeRateDTO {
-    private double rate;
+    private BigDecimal rate;
 }
