@@ -1,14 +1,14 @@
-package com.bankingsystem.app.helper;
+package com.bankingsystem.app.helper.impl;
 
 import com.bankingsystem.app.entity.AccountEntity;
 import com.bankingsystem.app.entity.LimitEntity;
 import com.bankingsystem.app.entity.TransactionEntity;
 import com.bankingsystem.app.enums.Category;
 import com.bankingsystem.app.enums.Currency;
+import com.bankingsystem.app.helper.interfaces.TransactionServiceHelperInterface;
 import com.bankingsystem.app.model.AccountPair;
 import com.bankingsystem.app.model.TransactionDTO;
-import com.bankingsystem.app.repository.LimitRepository;
-import com.bankingsystem.app.services.interfaces.*;
+import com.bankingsystem.app.service.interfaces.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

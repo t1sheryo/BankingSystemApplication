@@ -2,7 +2,7 @@ package com.bankingsystem.app.controller;
 
 import com.bankingsystem.app.entity.ExchangeRateEntity;
 import com.bankingsystem.app.enums.Currency;
-import com.bankingsystem.app.services.interfaces.ExchangeRateServiceInterface;
+import com.bankingsystem.app.service.interfaces.ExchangeRateServiceInterface;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

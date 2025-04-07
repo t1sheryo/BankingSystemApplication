@@ -3,14 +3,12 @@ package com.bankingsystem.app.unit.controller;
 import com.bankingsystem.app.controller.ExchangeRateController;
 import com.bankingsystem.app.entity.ExchangeRateEntity;
 import com.bankingsystem.app.enums.Currency;
-import com.bankingsystem.app.services.interfaces.ExchangeRateServiceInterface;
-import org.junit.jupiter.api.BeforeEach;
+import com.bankingsystem.app.service.interfaces.ExchangeRateServiceInterface;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.http.HttpStatus;

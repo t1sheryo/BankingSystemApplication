@@ -1,4 +1,4 @@
-package com.bankingsystem.app.services.interfaces;
+package com.bankingsystem.app.service.interfaces;
 
 import com.bankingsystem.app.entity.AccountEntity;
 

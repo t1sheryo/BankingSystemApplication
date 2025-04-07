@@ -6,8 +6,8 @@ import com.bankingsystem.app.entity.TransactionEntity;
 import com.bankingsystem.app.enums.Category;
 import com.bankingsystem.app.enums.Currency;
 import com.bankingsystem.app.model.TransactionDTO;
-import com.bankingsystem.app.services.interfaces.AccountServiceInterface;
-import com.bankingsystem.app.services.interfaces.TransactionServiceInterface;
+import com.bankingsystem.app.service.interfaces.AccountServiceInterface;
+import com.bankingsystem.app.service.interfaces.TransactionServiceInterface;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

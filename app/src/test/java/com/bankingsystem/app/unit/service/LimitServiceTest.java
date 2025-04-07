@@ -2,17 +2,11 @@ package com.bankingsystem.app.unit.service;
 
 import com.bankingsystem.app.entity.AccountEntity;
 import com.bankingsystem.app.entity.LimitEntity;
-import com.bankingsystem.app.entity.TransactionEntity;
 import com.bankingsystem.app.enums.Category;
 import com.bankingsystem.app.enums.Currency;
-import com.bankingsystem.app.model.AccountPair;
-import com.bankingsystem.app.model.TransactionDTO;
 import com.bankingsystem.app.model.limits.LimitRequest;
 import com.bankingsystem.app.repository.LimitRepository;
-import com.bankingsystem.app.repository.TransactionRepository;
-import com.bankingsystem.app.services.impl.LimitService;
-import com.bankingsystem.app.services.impl.TransactionService;
-import com.bankingsystem.app.services.interfaces.TransactionServiceHelperInterface;
+import com.bankingsystem.app.service.impl.LimitService;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,11 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class LimitServiceTest {
     @InjectMocks

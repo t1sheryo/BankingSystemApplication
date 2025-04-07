@@ -1,4 +1,4 @@
-package com.bankingsystem.app.services.interfaces;
+package com.bankingsystem.app.helper.interfaces;
 
 import com.bankingsystem.app.entity.LimitEntity;
 import com.bankingsystem.app.entity.TransactionEntity;

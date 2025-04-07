@@ -5,11 +5,11 @@ import com.bankingsystem.app.entity.LimitEntity;
 import com.bankingsystem.app.entity.TransactionEntity;
 import com.bankingsystem.app.enums.Category;
 import com.bankingsystem.app.enums.Currency;
+import com.bankingsystem.app.helper.interfaces.TransactionServiceHelperInterface;
 import com.bankingsystem.app.model.AccountPair;
 import com.bankingsystem.app.model.TransactionDTO;
 import com.bankingsystem.app.repository.TransactionRepository;
-import com.bankingsystem.app.services.impl.TransactionService;
-import com.bankingsystem.app.services.interfaces.TransactionServiceHelperInterface;
+import com.bankingsystem.app.service.impl.TransactionService;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

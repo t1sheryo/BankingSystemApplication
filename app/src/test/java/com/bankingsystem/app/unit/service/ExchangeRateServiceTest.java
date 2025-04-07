@@ -6,7 +6,7 @@ import com.bankingsystem.app.entity.ExchangeRateEntity;
 import com.bankingsystem.app.enums.Currency;
 import com.bankingsystem.app.model.ExchangeRateDTO;
 import com.bankingsystem.app.repository.ExchangeRateRepository;
-import com.bankingsystem.app.services.impl.ExchangeRateService;
+import com.bankingsystem.app.service.impl.ExchangeRateService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;

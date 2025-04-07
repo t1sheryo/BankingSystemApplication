@@ -18,13 +18,11 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExchangeRateCompositePrimaryKey implements Serializable {
-    @Enumerated(EnumType.STRING) // говорит, что используемый тип является перечислением
-    // и необходимо в параметрах указать каким типом он будет сохраняться в бд
+    @Enumerated(EnumType.STRING)
     @Column(name = "currency_from", nullable = false)
     private Currency currencyFrom;
 
-    @Enumerated(EnumType.STRING) // говорит, что используемый тип является перечислением
-    // и необходимо в параметрах указать каким типом он будет сохраняться в бд
+    @Enumerated(EnumType.STRING)
     @Column(name = "currency_to", nullable = false)
     private Currency currencyTo;
 

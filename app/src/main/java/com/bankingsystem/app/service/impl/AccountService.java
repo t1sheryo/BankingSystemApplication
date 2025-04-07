@@ -1,8 +1,8 @@
-package com.bankingsystem.app.services.impl;
+package com.bankingsystem.app.service.impl;
 
 import com.bankingsystem.app.entity.AccountEntity;
 import com.bankingsystem.app.repository.AccountRepository;
-import com.bankingsystem.app.services.interfaces.AccountServiceInterface;
+import com.bankingsystem.app.service.interfaces.AccountServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

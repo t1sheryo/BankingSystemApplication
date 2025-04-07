@@ -1,4 +1,4 @@
-package com.bankingsystem.app.services.impl;
+package com.bankingsystem.app.service.impl;
 
 import com.bankingsystem.app.config.TwelveDataConfig;
 import com.bankingsystem.app.entity.ExchangeRateCompositePrimaryKey;
@@ -6,12 +6,11 @@ import com.bankingsystem.app.entity.ExchangeRateEntity;
 import com.bankingsystem.app.enums.Currency;
 import com.bankingsystem.app.model.ExchangeRateDTO;
 import com.bankingsystem.app.repository.ExchangeRateRepository;
-import com.bankingsystem.app.services.interfaces.ExchangeRateServiceInterface;
+import com.bankingsystem.app.service.interfaces.ExchangeRateServiceInterface;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import com.bankingsystem.app.model.CurrencyPair;
 
