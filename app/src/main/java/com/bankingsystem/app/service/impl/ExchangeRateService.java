@@ -132,7 +132,7 @@ public class ExchangeRateService implements ExchangeRateServiceInterface {
                 exchangeRateRepository.findByIdAndRateDate(key, date);
         log.info("Exchange rate from {} to {} : {}", from, to, exchangeRateEntity);
 
-        return exchangeRateRepository.findByIdAndRateDate(key, date);
+        return exchangeRateEntity;
     }
 
     @Override
