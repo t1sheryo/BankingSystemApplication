@@ -12,7 +12,6 @@ import com.bankingsystem.app.model.TransactionDTO;
 import com.bankingsystem.app.service.interfaces.AccountServiceInterface;
 import com.bankingsystem.app.service.interfaces.ExchangeRateServiceInterface;
 import com.bankingsystem.app.service.interfaces.LimitServiceInterface;
-import org.hibernate.query.spi.Limit;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +19,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -137,7 +135,7 @@ public class TransactionServiceHelperTest {
         LimitEntity expectedLimit = createLimitEntity();
         BigDecimal sumInUSD = new BigDecimal("100.00");
 
-        boolean actualResult = sumInUSD.compareTo(expectedLimit.getLimitRemainder()) > 0;
+        boolean actualResult = transactionServiceHelper.isLimitExceeded(sumInUSD, expectedLimit);
 
         assertThat(actualResult).isEqualTo(LIMIT_EXCEEDED_FALSE);
     }
@@ -147,7 +145,7 @@ public class TransactionServiceHelperTest {
         LimitEntity expectedLimit = createLimitEntity();
         BigDecimal sumInUSD = new BigDecimal("1100.00");
 
-        boolean actualResult = sumInUSD.compareTo(expectedLimit.getLimitRemainder()) > 0;
+        boolean actualResult = transactionServiceHelper.isLimitExceeded(sumInUSD, expectedLimit);
 
         assertThat(actualResult).isEqualTo(LIMIT_EXCEEDED_TRUE);
     }
