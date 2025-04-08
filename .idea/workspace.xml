@@ -5,15 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="64bcf87b-f166-4323-9ad8-8e2216106e39" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/TransactionServiceHelper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/resources/db/migration/V2__test_data.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/test/java/com/bankingsystem/app/unit/service/AccountServiceTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/controller/ExchangeRateController.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/controller/ExchangeRateController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/controller/TransactionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/controller/TransactionController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/repository/TransactionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/repository/TransactionRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/ExchangeRateService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/ExchangeRateService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/TransactionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/impl/TransactionService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/interfaces/ExchangeRateServiceInterface.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/services/interfaces/ExchangeRateServiceInterface.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/entity/TransactionEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/entity/TransactionEntity.java" afterDir="false" />
     </list>
     <list id="261db75a-a75e-443c-961e-7614201a8522" name="Changes by timofey" comment="" />
     <option name="SHOW_DIALOG" value="false" />
@@ -72,6 +66,20 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "JUnit.AccountServiceTest.shouldReturnAccountEntityById.executor": "Run",
+    "JUnit.AccountServiceTest.shouldReturnNullWhenAccountNotFound.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldBuildTransactionEntitySuccessfully.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldConvertTransactionDTOFromTransactionEntity.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldConvertTransactionDTOFromTransactionEntitySuccessfully.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldReturnAmountInUSD.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldReturnExceptionWhenLimitExceeded.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldReturnExceptionWhenLimitNotFound.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldReturnExceptionWhenLimitRemainderIsNull.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldReturnExceptionWhenRemainderIsNull.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldReturnTrueWhenLimitExceeded.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldReturnUpdateLimitRemainder.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldThrowExceptionWhenAmountIsZero.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldValidateAccountsSuccessfully.executor": "Run",
     "RequestMappingsPanelOrder0": "0",
     "RequestMappingsPanelOrder1": "1",
     "RequestMappingsPanelWidth0": "75",
@@ -94,7 +102,87 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Spring Boot.AppApplication">
+    <configuration name="TransactionServiceHelperTest.shouldConvertTransactionDTOFromTransactionEntitySuccessfully" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="impl" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.bankingsystem.app.unit.helper.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.bankingsystem.app.unit.helper" />
+      <option name="MAIN_CLASS_NAME" value="com.bankingsystem.app.unit.helper.TransactionServiceHelperTest" />
+      <option name="METHOD_NAME" value="shouldConvertTransactionDTOFromTransactionEntitySuccessfully" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TransactionServiceHelperTest.shouldReturnAmountInUSD" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="impl" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.bankingsystem.app.unit.helper.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.bankingsystem.app.unit.helper" />
+      <option name="MAIN_CLASS_NAME" value="com.bankingsystem.app.unit.helper.TransactionServiceHelperTest" />
+      <option name="METHOD_NAME" value="shouldReturnAmountInUSD" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TransactionServiceHelperTest.shouldReturnExceptionWhenRemainderIsNull" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="impl" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.bankingsystem.app.unit.helper.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.bankingsystem.app.unit.helper" />
+      <option name="MAIN_CLASS_NAME" value="com.bankingsystem.app.unit.helper.TransactionServiceHelperTest" />
+      <option name="METHOD_NAME" value="shouldReturnExceptionWhenRemainderIsNull" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TransactionServiceHelperTest.shouldReturnUpdateLimitRemainder" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="impl" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.bankingsystem.app.unit.helper.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.bankingsystem.app.unit.helper" />
+      <option name="MAIN_CLASS_NAME" value="com.bankingsystem.app.unit.helper.TransactionServiceHelperTest" />
+      <option name="METHOD_NAME" value="shouldReturnUpdateLimitRemainder" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TransactionServiceHelperTest.shouldThrowExceptionWhenAmountIsZero" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="impl" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.bankingsystem.app.unit.helper.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.bankingsystem.app.unit.helper" />
+      <option name="MAIN_CLASS_NAME" value="com.bankingsystem.app.unit.helper.TransactionServiceHelperTest" />
+      <option name="METHOD_NAME" value="shouldThrowExceptionWhenAmountIsZero" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="AppApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
       <module name="impl" />
@@ -103,6 +191,15 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.TransactionServiceHelperTest.shouldThrowExceptionWhenAmountIsZero" />
+        <item itemvalue="JUnit.TransactionServiceHelperTest.shouldReturnAmountInUSD" />
+        <item itemvalue="JUnit.TransactionServiceHelperTest.shouldReturnExceptionWhenRemainderIsNull" />
+        <item itemvalue="JUnit.TransactionServiceHelperTest.shouldReturnUpdateLimitRemainder" />
+        <item itemvalue="JUnit.TransactionServiceHelperTest.shouldConvertTransactionDTOFromTransactionEntitySuccessfully" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -138,6 +235,7 @@
       <workItem from="1743601616030" duration="6095000" />
       <workItem from="1743755183715" duration="5653000" />
       <workItem from="1743786769765" duration="9416000" />
+      <workItem from="1744118667808" duration="14521000" />
     </task>
     <servers />
   </component>

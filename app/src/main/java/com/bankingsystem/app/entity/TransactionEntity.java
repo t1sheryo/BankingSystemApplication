@@ -56,8 +56,9 @@ public class TransactionEntity {
     @Column(name = "datetime", nullable = false)
     private OffsetDateTime transactionTime;
 
+    @NotNull
     @Column(name = "limit_exceeded", nullable = false)
-    private boolean limitExceeded;
+    private Boolean limitExceeded;
 
     @NotNull
     @ManyToOne
@@ -79,4 +80,6 @@ public class TransactionEntity {
     @Column(name = "limit_currency_at_time", nullable = false)
     @Enumerated(EnumType.STRING)
     private Currency limitCurrencyAtTime;
+
+
 }
