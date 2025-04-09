@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -47,14 +48,16 @@ public class TransactionServiceHelperTest {
     private static final Currency TEST_CURRENCY = Currency.USD;
     private static final Category TEST_CATEGORY = Category.SERVICE;
     private static final BigDecimal TEST_SUM = new BigDecimal("1000.00");
-    private static final OffsetDateTime TEST_DATE = OffsetDateTime.now();
+    private static final OffsetDateTime TEST_DATE =
+            OffsetDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC);;
     private static final Boolean LIMIT_EXCEEDED_FALSE = false;
     private static final Boolean LIMIT_EXCEEDED_TRUE = true;
     private static final Long LIMIT_ID = 1L;
 
     private static final BigDecimal LIMIT_SUM_VALUE = new BigDecimal("1000.00");
     private static final Category LIMIT_CATEGORY = Category.SERVICE;
-    private static final OffsetDateTime LIMIT_DATETIME = OffsetDateTime.now();
+    private static final OffsetDateTime LIMIT_DATETIME =
+            OffsetDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC);;
     private static final Currency LIMIT_CURRENCY_USD = Currency.USD;
     private static final BigDecimal LIMIT_REMAINDER = new BigDecimal("1000.00");
     private static final BigDecimal SUM_IN_USD = new BigDecimal("1000.00");
