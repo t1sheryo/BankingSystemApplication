@@ -10,6 +10,7 @@ import com.bankingsystem.app.repository.AccountRepository;
 import com.bankingsystem.app.repository.TransactionRepository;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -17,13 +18,12 @@ import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.jdbc.core.JdbcTemplate;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import org.testcontainers.containers.MySQLContainer;
@@ -35,12 +35,15 @@ import org.junit.jupiter.api.TestInstance;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 
 //TODO:
-@SpringBootTest(    )
+@Slf4j
+@SpringBootTest
+@TestPropertySource(locations = "classpath:application-test.yaml")
 @Testcontainers
 @AutoConfigureMockMvc
 // для того чтобы после каждого теста изменения откатывались
@@ -50,8 +53,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 //JUnit создает один экземпляр тестового класса для всех тестов в этом классе
 //экземпляр используется для всех тестов и поля класса сохраняют своё состояние
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ActiveProfiles("test")
-public class TransactionControllerIntegrationTest {
+public class TransactionControllerIT {
     //создает контейнер внутри теста
     @Container
     private static final MySQLContainer<?> mysqlContainer = new MySQLContainer<>("mysql:8.0")
@@ -70,62 +72,60 @@ public class TransactionControllerIntegrationTest {
     private AccountRepository accountRepository;
     @Autowired
     private TransactionRepository transactionRepository;
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", mysqlContainer::getJdbcUrl);
-        registry.add("spring.datasource.username", mysqlContainer::getUsername);
-        registry.add("spring.datasource.password", mysqlContainer::getPassword);;
-
-        registry.add("spring.flyway.url", mysqlContainer::getJdbcUrl);
-        registry.add("spring.flyway.username", mysqlContainer::getUsername);
-        registry.add("spring.flyway.password", mysqlContainer::getPassword);
-    }
-
     private static final Long VALID_ACCOUNT_ID_FROM = 1L;
     private static final Long VALID_ACCOUNT_ID_TO = 2L;
     private static final Long INVALID_ACCOUNT_ID = -1L;
     private static final Currency TEST_CURRENCY = Currency.EUR;
     private static final Category TEST_CATEGORY = Category.PRODUCT;
     private static final BigDecimal TEST_SUM = BigDecimal.valueOf(1000);
-    private static final OffsetDateTime TEST_DATE = OffsetDateTime.now().minusDays(1);
-    private static final Long TRANSACTION_ID = 1L;
+    private static final OffsetDateTime TEST_DATE = OffsetDateTime.now();
+
+    // вынес запуск контейнера, т.к. загружаются тут обьекты так:
+    // 1) статические блоки и инициализация полей
+    // 2) аннотации на уровне класса(например, @SpringBootTest, @Testcontainers, @DynamicPropertySource)
+    // 3) spring-контекст
+    // 4) @BeforeAll
+    // 5) @BeforeEach
+    // 6) @Test
+    // 7) @AfterEach/@AfterAll
+    // Следовательно для @DynamicPropertySource необходимо запустить контейнер в статическом блоке
+    static{
+        mysqlContainer.start();
+    }
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        String jdbcUrl = mysqlContainer.getJdbcUrl();
+        String username = mysqlContainer.getUsername();
+        String password = mysqlContainer.getPassword();
+
+        registry.add("spring.datasource.url", () -> jdbcUrl);
+        registry.add("spring.datasource.username", () -> username);
+        registry.add("spring.datasource.password", () -> password);
+
+        registry.add("spring.flyway.url", () -> jdbcUrl);
+        registry.add("spring.flyway.user", () -> username);
+        registry.add("spring.flyway.password", () -> password);
+
+    }
+
     @BeforeAll
       void beforeAll() throws Exception{
-        mysqlContainer.start();
-
         wireMockServer = new WireMockServer(8089);
         wireMockServer.start();
 
-    }
-    @BeforeEach
-    void setUp() throws Exception
-    {
         wireMockServer.resetAll();
-        //Настройка заглушки для USD/EUR
-        ExchangeRateResponse exchangeRateUSDtoEUR = new ExchangeRateResponse(0.915542);
+        // Настройка заглушки для EUR/USD
+        ExchangeRateResponse exchangeRateUSDtoEUR = new ExchangeRateResponse(1.10825);
         String usdEurBody = objectMapper.writeValueAsString(exchangeRateUSDtoEUR);
 
         wireMockServer.stubFor(get(urlPathMatching("/exchange_rate"))
-                .withQueryParam("symbol", equalTo("USD/EUR"))
+                .withQueryParam("symbol", equalTo("EUR/USD"))
                 .withQueryParam("apikey", equalTo("7a79c306727443819a002da0398f5ce7"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody(usdEurBody)));
-
-        ExchangeRateResponse exchangeRateEURtoRUS = new ExchangeRateResponse(93.5);
-        String usdRubBody = objectMapper.writeValueAsString(exchangeRateEURtoRUS);
-
-        wireMockServer.stubFor(get(urlPathMatching("/exchange_rate"))
-                .withQueryParam("symbol", equalTo("USD/RUB"))
-                .withQueryParam("apikey", equalTo("7a79c306727443819a002da0398f5ce7"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(usdRubBody)));
-
-
     }
 
     @AfterAll
@@ -137,9 +137,9 @@ public class TransactionControllerIntegrationTest {
     @Test
     @DisplayName("Should create Transaction Successfully")
     void shouldCreateTransactionSuccessfully() throws Exception {
-        AccountEntity accountFrom = createAccountEntity();
-        AccountEntity accountTo = createAccountEntity();
-        TransactionDTO dto = createTransactionDTO(accountFrom.getId(), accountTo.getId());
+        TransactionDTO dto = createTransactionDTO();
+
+        log.info("flagflag");
 
         mockMvc.perform(post("/bank/transactions")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -158,15 +158,13 @@ public class TransactionControllerIntegrationTest {
         mockMvc.perform(post("/bank/transactions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("null"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Transaction DTO cannot be null"));
+                .andExpect(status().isBadRequest());
     }
 
-    private TransactionDTO createTransactionDTO(Long accountFrom, Long accountTo)
-    {
+    private TransactionDTO createTransactionDTO() {
         TransactionDTO transactionDTO = new TransactionDTO();
-        transactionDTO.setAccountIdFrom(accountFrom);
-        transactionDTO.setAccountIdTo(accountTo);
+        transactionDTO.setAccountIdFrom(VALID_ACCOUNT_ID_FROM);
+        transactionDTO.setAccountIdTo(VALID_ACCOUNT_ID_TO);
         transactionDTO.setCurrency(TEST_CURRENCY);
         transactionDTO.setExpenseCategory(TEST_CATEGORY);
         transactionDTO.setSum(TEST_SUM);
@@ -177,8 +175,14 @@ public class TransactionControllerIntegrationTest {
         transactionDTO.setLimitCurrency(null);
         return transactionDTO;
     }
-    private AccountEntity createAccountEntity() {
+    private AccountEntity createAccountFromEntity() {
         AccountEntity accountEntity = new AccountEntity();
+        accountEntity.setId(VALID_ACCOUNT_ID_FROM);
+        return accountRepository.save(accountEntity);
+    }
+    private AccountEntity createAccountToEntity() {
+        AccountEntity accountEntity = new AccountEntity();
+        accountEntity.setId(VALID_ACCOUNT_ID_TO);
         return accountRepository.save(accountEntity);
     }
 }

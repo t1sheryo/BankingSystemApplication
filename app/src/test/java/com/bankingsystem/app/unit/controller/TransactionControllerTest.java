@@ -51,8 +51,6 @@ public class TransactionControllerTest {
         TransactionDTO dto = createTransactionDTO();
         TransactionEntity entity = createTransactionEntity();
 
-        when(accountService.getAccountById(VALID_ACCOUNT_ID_FROM)).thenReturn(new AccountEntity());
-        when(accountService.getAccountById(VALID_ACCOUNT_ID_TO)).thenReturn(new AccountEntity());
         when(transactionService.createTransaction(dto)).thenReturn(entity);
 
         ResponseEntity<TransactionEntity> response = controller.createTransaction(dto);
@@ -64,31 +62,6 @@ public class TransactionControllerTest {
                 .isEqualTo(entity);
 
         verify(transactionService, times(1)).createTransaction(dto);
-    }
-
-    @Test
-    @DisplayName("Should throw exception when transaction DTO is null")
-    void shouldThrowExceptionWhenTransactionDTOIsNull() {
-        assertThatThrownBy(() -> controller.createTransaction(null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Transaction DTO cannot be null");
-
-        verify(accountService, never()).getAccountById(any());
-        verify(transactionService, never()).createTransaction(any());
-    }
-
-    @Test
-    @DisplayName("Should throw exception when account not found")
-    void shouldThrowExceptionWhenAccountNotFound() {
-        TransactionDTO dto = createTransactionDTO();
-
-        when(accountService.getAccountById(VALID_ACCOUNT_ID_FROM)).thenReturn(null);
-
-        assertThatThrownBy(() -> controller.createTransaction(dto))
-                .isInstanceOf(IllegalArgumentException.class).
-                hasMessage("One or both accounts not found");
-
-        verify(transactionService, never()).createTransaction(dto);
     }
 
    @Test

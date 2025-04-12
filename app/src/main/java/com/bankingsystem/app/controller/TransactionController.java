@@ -27,20 +27,13 @@ public class TransactionController {
     }
 
     @PostMapping
+    // null, то выбросит HttpMessageNotReadableException
     public ResponseEntity<TransactionEntity> createTransaction(@Valid @RequestBody TransactionDTO transactionDTO)
     {
-        if (transactionDTO == null) {
-            throw new IllegalArgumentException("Transaction DTO cannot be null");
-        }
 
         log.info("create Transaction for DTO: {}", transactionDTO);
 
-        if(accountService.getAccountById(transactionDTO.getAccountIdFrom()) == null ||
-            accountService.getAccountById(transactionDTO.getAccountIdTo()) == null) {
-            throw new IllegalArgumentException("One or both accounts not found");
-        }
-
-        TransactionEntity transaction= transactionService.createTransaction(transactionDTO);
+        TransactionEntity transaction = transactionService.createTransaction(transactionDTO);
 
         return ResponseEntity
                  .status(HttpStatus.CREATED)

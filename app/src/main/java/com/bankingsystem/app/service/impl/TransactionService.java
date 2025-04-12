@@ -41,19 +41,21 @@ public class TransactionService implements TransactionServiceInterface {
                 transactionDTO.getAccountIdFrom(), transactionDTO.getAccountIdTo(),
                 transactionDTO.getExpenseCategory(), transactionDTO.getSum(), transactionDTO.getCurrency());
         //Проверка счетов отправителя и получателя
-        AccountPair accounts = transactionServiceHelper.validateAccounts(transactionDTO.getAccountIdFrom(), transactionDTO.getAccountIdTo());
-        //Нахождение свежего лимита
-        LimitEntity limit = transactionServiceHelper.findAndValidateLimit(transactionDTO.getAccountIdFrom(), transactionDTO.getExpenseCategory());
-
+        AccountPair accounts =
+                transactionServiceHelper.validateAccounts(transactionDTO.getAccountIdFrom(), transactionDTO.getAccountIdTo());
+        //Нахождение свежего лимита;
+        LimitEntity limit =
+                transactionServiceHelper.findAndValidateLimit(transactionDTO.getAccountIdFrom(), transactionDTO.getExpenseCategory());
         //Конвертация в доллары
-        BigDecimal sumInUsd = transactionServiceHelper.convertToUSD(transactionDTO.getSum(), transactionDTO.getCurrency(), transactionDTO.getTransactionTime().toLocalDate());
-
+        BigDecimal sumInUsd =
+                transactionServiceHelper.convertToUSD(transactionDTO.getSum(), transactionDTO.getCurrency(), transactionDTO.getTransactionTime().toLocalDate());
         //Проверка превышения лимита
-        boolean limitExceeded = transactionServiceHelper.isLimitExceeded(sumInUsd, limit);
-
-        TransactionEntity transactionEntity = transactionServiceHelper.buildTransactionEntity(transactionDTO, accounts, limit, limitExceeded);
-
-        TransactionEntity savedTransaction = transactionRepository.save(transactionEntity);
+        boolean limitExceeded =
+                transactionServiceHelper.isLimitExceeded(sumInUsd, limit);
+        TransactionEntity transactionEntity =
+                transactionServiceHelper.buildTransactionEntity(transactionDTO, accounts, limit, limitExceeded);
+        TransactionEntity savedTransaction =
+                transactionRepository.save(transactionEntity);
 
         log.info("Updating limitRemainder for limitId: {}, old value: {}, new value: {}",
                 limit.getId(), limit.getLimitRemainder(), limit.getLimitRemainder().subtract(sumInUsd));
