@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +41,10 @@ import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 
-//TODO:
 @Slf4j
+// по умолчанию эта аннотация загружает весь spring-контекст(вообще все бины)
+// однако можно в параметрах указать загружать только зависимые бины
 @SpringBootTest
-@TestPropertySource(locations = "classpath:application-test.yaml")
 @Testcontainers
 @AutoConfigureMockMvc
 // для того чтобы после каждого теста изменения откатывались
@@ -93,6 +94,8 @@ public class TransactionControllerIT {
         mysqlContainer.start();
     }
 
+    // Это нужно, потому что Testcontainers запускает MySQL на случайном порту,
+    // и мы не можем заранее знать точный URL.
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         String jdbcUrl = mysqlContainer.getJdbcUrl();
@@ -110,7 +113,7 @@ public class TransactionControllerIT {
     }
 
     @BeforeAll
-      void beforeAll() throws Exception{
+    void beforeAll() throws Exception{
         wireMockServer = new WireMockServer(8089);
         wireMockServer.start();
 
@@ -129,7 +132,7 @@ public class TransactionControllerIT {
     }
 
     @AfterAll
-     void afterAll() {
+    void afterAll() {
         wireMockServer.stop();
         mysqlContainer.stop();
     }
@@ -142,8 +145,8 @@ public class TransactionControllerIT {
         log.info("flagflag");
 
         mockMvc.perform(post("/bank/transactions")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.limitExceeded").value(false));
@@ -156,9 +159,65 @@ public class TransactionControllerIT {
     @DisplayName("Should not create transaction because of transactionDTO = null")
     void shouldReturnBadRequestStatusBecauseOfNullTransationDTO() throws Exception {
         mockMvc.perform(post("/bank/transactions")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("null"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("null"))
                 .andExpect(status().isBadRequest());
+    }
+
+    // если валидация не проходит, возвращает MethodArgumentNotValidException
+    @Test
+    @DisplayName("Should return INTERNAL_SERVER_ERROR status because transactionDTO fiels are not initialized")
+    void shouldReturnValidationErrorForMissingRequiredFields() throws Exception {
+        TransactionDTO invalidDTO = new TransactionDTO();
+
+        mockMvc.perform(post("/bank/transactions")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(invalidDTO)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.errors").isArray())
+            .andExpect(jsonPath("$.errors").isNotEmpty())
+            .andExpect(jsonPath("$.errors").value(containsInAnyOrder(
+                    "Account Id field must not be null",
+                    "Account Id field must not be null",
+                    "Currency field must not be null",
+                    "Category field must not be null",
+                    "Amount field must not be null",
+                    "Transaction time must not be null"
+            )));
+
+        assertThat(transactionRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should return INTERNAL_SERVER_ERROR for negative sum of transaction")
+    void shouldReturnValidationErrorForNegativeSum() throws Exception {
+        TransactionDTO invalidDTO = createTransactionDTO();
+        invalidDTO.setSum(BigDecimal.valueOf(-100));
+
+        mockMvc.perform(post("/bank/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").isArray())
+                .andExpect(jsonPath("$.errors[0]").value("Transaction value must be over 0.001 unit of currency"));
+
+        assertThat(transactionRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should return INTERNAL_SERVER_ERROR for invalid account id")
+    void shouldReturnBadRequestForInvalidAccountIdFrom() throws Exception {
+        TransactionDTO invalidDTO = createTransactionDTO();
+        invalidDTO.setAccountIdFrom(INVALID_ACCOUNT_ID);
+
+        mockMvc.perform(post("/bank/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").isArray())
+                .andExpect(jsonPath("$.errors[0]").value("Account Id must be positive"));
+
+        assertThat(transactionRepository.findAll()).isEmpty();
     }
 
     private TransactionDTO createTransactionDTO() {
@@ -186,3 +245,4 @@ public class TransactionControllerIT {
         return accountRepository.save(accountEntity);
     }
 }
+//TODO:
