@@ -6,6 +6,7 @@ import com.bankingsystem.app.model.TransactionDTO;
 import com.bankingsystem.app.service.interfaces.AccountServiceInterface;
 import com.bankingsystem.app.service.interfaces.TransactionServiceInterface;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,15 +44,13 @@ public class TransactionController {
 
     @GetMapping("/exceeded")
     public ResponseEntity<List<TransactionDTO>> getTransactionsExceededLimit(@RequestParam Long accountId) {
-        if(accountId == null || accountId <= 0) {
-            throw new IllegalArgumentException("Invalid accountId");
+        if(accountId <= 0) {
+            throw new IllegalArgumentException("Invalid account Id");
         }
 
         if(accountService.getAccountById(accountId) == null) {
             log.warn("Account {} not found", accountId);
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .build();
+            throw new IllegalStateException("Account not found");
         }
 
         List<TransactionDTO> exceededTransactions = transactionService.getTransactionsByAccountIdWhichExceedLimit(accountId);

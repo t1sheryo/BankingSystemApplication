@@ -1,6 +1,7 @@
 package com.bankingsystem.app.integration.controller;
 
 import com.bankingsystem.app.entity.AccountEntity;
+import com.bankingsystem.app.entity.LimitEntity;
 import com.bankingsystem.app.entity.TransactionEntity;
 import com.bankingsystem.app.enums.Category;
 import com.bankingsystem.app.enums.Currency;
@@ -8,7 +9,9 @@ import com.bankingsystem.app.model.ExchangeRateResponse;
 import com.bankingsystem.app.model.TransactionDTO;
 import com.bankingsystem.app.repository.AccountRepository;
 import com.bankingsystem.app.repository.TransactionRepository;
+import com.bankingsystem.app.service.impl.AccountService;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
@@ -20,11 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import org.testcontainers.containers.MySQLContainer;
@@ -39,7 +39,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Slf4j
 // по умолчанию эта аннотация загружает весь spring-контекст(вообще все бины)
@@ -81,6 +82,16 @@ public class TransactionControllerIT {
     private static final BigDecimal TEST_SUM = BigDecimal.valueOf(1000);
     private static final OffsetDateTime TEST_DATE = OffsetDateTime.now();
 
+    private static final Long LIMIT_ID = 1L;
+    private static final BigDecimal LIMIT_SUM = BigDecimal.valueOf(1000);
+    private static final Category LIMIT_CATEGORY = Category.PRODUCT;
+    private static final OffsetDateTime LIMIT_DATE_TIME =
+            OffsetDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneOffset.UTC);
+    private static final Currency LIMIT_CURRENCY = Currency.USD;
+    private static final BigDecimal LIMIT_REMAINDER = BigDecimal.valueOf(500);
+    private static final AccountEntity LIMIT_ACCOUNT =
+            new AccountEntity(VALID_ACCOUNT_ID_FROM);
+
     // вынес запуск контейнера, т.к. загружаются тут обьекты так:
     // 1) статические блоки и инициализация полей
     // 2) аннотации на уровне класса(например, @SpringBootTest, @Testcontainers, @DynamicPropertySource)
@@ -93,6 +104,9 @@ public class TransactionControllerIT {
     static{
         mysqlContainer.start();
     }
+
+    @Autowired
+    private AccountService accountService;
 
     // Это нужно, потому что Testcontainers запускает MySQL на случайном порту,
     // и мы не можем заранее знать точный URL.
@@ -122,7 +136,7 @@ public class TransactionControllerIT {
         ExchangeRateResponse exchangeRateUSDtoEUR = new ExchangeRateResponse(1.10825);
         String usdEurBody = objectMapper.writeValueAsString(exchangeRateUSDtoEUR);
 
-        wireMockServer.stubFor(get(urlPathMatching("/exchange_rate"))
+        wireMockServer.stubFor(WireMock.get(urlPathMatching("/exchange_rate"))
                 .withQueryParam("symbol", equalTo("EUR/USD"))
                 .withQueryParam("apikey", equalTo("7a79c306727443819a002da0398f5ce7"))
                 .willReturn(aResponse()
@@ -137,12 +151,11 @@ public class TransactionControllerIT {
         mysqlContainer.stop();
     }
 
+    // FIXME: нет проверки в transactionservice на то что есть аккаунт в репозитории
     @Test
     @DisplayName("Should create Transaction Successfully")
     void shouldCreateTransactionSuccessfully() throws Exception {
         TransactionDTO dto = createTransactionDTO();
-
-        log.info("flagflag");
 
         mockMvc.perform(post("/bank/transactions")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -166,7 +179,7 @@ public class TransactionControllerIT {
 
     // если валидация не проходит, возвращает MethodArgumentNotValidException
     @Test
-    @DisplayName("Should return INTERNAL_SERVER_ERROR status because transactionDTO fiels are not initialized")
+    @DisplayName("Should return BAD_REQUEST status because transactionDTO fiels are not initialized")
     void shouldReturnValidationErrorForMissingRequiredFields() throws Exception {
         TransactionDTO invalidDTO = new TransactionDTO();
 
@@ -189,7 +202,7 @@ public class TransactionControllerIT {
     }
 
     @Test
-    @DisplayName("Should return INTERNAL_SERVER_ERROR for negative sum of transaction")
+    @DisplayName("Should return BAD_REQUEST for negative sum of transaction")
     void shouldReturnValidationErrorForNegativeSum() throws Exception {
         TransactionDTO invalidDTO = createTransactionDTO();
         invalidDTO.setSum(BigDecimal.valueOf(-100));
@@ -205,7 +218,7 @@ public class TransactionControllerIT {
     }
 
     @Test
-    @DisplayName("Should return INTERNAL_SERVER_ERROR for invalid account id")
+    @DisplayName("Should return BAD_REQUEST for invalid account id")
     void shouldReturnBadRequestForInvalidAccountIdFrom() throws Exception {
         TransactionDTO invalidDTO = createTransactionDTO();
         invalidDTO.setAccountIdFrom(INVALID_ACCOUNT_ID);
@@ -218,6 +231,73 @@ public class TransactionControllerIT {
                 .andExpect(jsonPath("$.errors[0]").value("Account Id must be positive"));
 
         assertThat(transactionRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should return transactions with exceeded limit for valid account ID")
+    void shouldReturnTransactionsWithExceededLimitForValidAccountId() throws Exception {
+        AccountEntity accountFromEntity = createAccountFromEntity();
+        AccountEntity accountToEntity = createAccountToEntity();
+        TransactionEntity transaction = createTransactionEntity();
+        transaction.setAccountFrom(accountFromEntity);
+        transaction.setAccountTo(accountToEntity);
+        transaction.setLimitExceeded(true);
+
+        accountRepository.save(accountFromEntity);
+        accountRepository.save(accountToEntity);
+        transactionRepository.save(transaction);
+
+        mockMvc.perform(get("/bank/transactions/exceeded")
+                        .param("accountId", VALID_ACCOUNT_ID_FROM.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].fromAccount").value(VALID_ACCOUNT_ID_FROM))
+                .andExpect(jsonPath("$[0].sum").value(TEST_SUM.doubleValue()));
+
+        List<TransactionEntity> transactions = transactionRepository.findAll();
+        assertThat(transactions).hasSize(1);
+        assertThat(transactions.get(0).getLimitExceeded()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should return BAD_REQUEST for negative account id while getting transactions with limit exceeded")
+    void shouldReturnBadRequestForNegativeAccountIdWhileGettingTransactionsWithLimitExceeded() throws Exception {
+
+        mockMvc.perform(get("/bank/transactions/exceeded")
+                        .param("accountId", INVALID_ACCOUNT_ID.toString()))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Invalid input: Invalid account Id"));
+    }
+
+    @Test
+    @DisplayName("Should return BAD_REQUEST for null account id while getting transactions with limit exceeded")
+    void shouldReturnBadRequestForNullAccountIdWhileGettingTransactionsWithLimitExceeded() throws Exception {
+
+        mockMvc.perform(get("/bank/transactions/exceeded")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(null)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").isArray())
+                .andExpect(jsonPath("$.errors[0]").value("Argument 'accountId' is required"));
+    }
+
+    @Test
+    @DisplayName("Should return BAD_REQUEST because there is no account in repository")
+    void shouldReturnBadRequestForNoAccountInRepository() throws Exception {
+        AccountEntity accountFromEntity = createAccountFromEntity();
+        AccountEntity accountToEntity = createAccountToEntity();
+        TransactionEntity transaction = createTransactionEntity();
+        transaction.setAccountFrom(accountFromEntity);
+        transaction.setAccountTo(accountToEntity);
+        transaction.setLimitExceeded(true);
+
+        transactionRepository.save(transaction);
+        accountRepository.delete(accountFromEntity);
+
+        mockMvc.perform(get("/bank/transactions/exceeded")
+                        .param("accountId", VALID_ACCOUNT_ID_FROM.toString()))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Resource not found: Account not found"));
     }
 
     private TransactionDTO createTransactionDTO() {
@@ -237,12 +317,40 @@ public class TransactionControllerIT {
     private AccountEntity createAccountFromEntity() {
         AccountEntity accountEntity = new AccountEntity();
         accountEntity.setId(VALID_ACCOUNT_ID_FROM);
-        return accountRepository.save(accountEntity);
+        return accountEntity;
     }
     private AccountEntity createAccountToEntity() {
         AccountEntity accountEntity = new AccountEntity();
         accountEntity.setId(VALID_ACCOUNT_ID_TO);
-        return accountRepository.save(accountEntity);
+        return accountEntity;
+    }
+    private LimitEntity createLimitEntity() {
+            LimitEntity limitEntity = new LimitEntity();
+
+            limitEntity.setId(LIMIT_ID);
+            limitEntity.setLimitSum(LIMIT_SUM);
+            limitEntity.setCategory(LIMIT_CATEGORY);
+            limitEntity.setLimitDateTime(LIMIT_DATE_TIME);
+            limitEntity.setLimitCurrencyShortName(LIMIT_CURRENCY);
+            limitEntity.setLimitRemainder(LIMIT_REMAINDER);
+            limitEntity.setAccount(LIMIT_ACCOUNT);
+
+            return limitEntity;
+        }
+    private TransactionEntity createTransactionEntity() {
+        LimitEntity limitEntity = createLimitEntity();
+
+        TransactionEntity transactionEntity = new TransactionEntity();
+        transactionEntity.setCurrency(TEST_CURRENCY);
+        transactionEntity.setCategory(TEST_CATEGORY);
+        transactionEntity.setSum(TEST_SUM);
+        transactionEntity.setTransactionTime(TEST_DATE);
+        transactionEntity.setLimitExceeded(false);
+        transactionEntity.setLimit(limitEntity);
+        transactionEntity.setLimitDateTimeAtTime(LIMIT_DATE_TIME);
+        transactionEntity.setLimitSumAtTime(LIMIT_SUM);
+        transactionEntity.setLimitCurrencyAtTime(LIMIT_CURRENCY);
+
+        return transactionEntity;
     }
 }
-//TODO:
