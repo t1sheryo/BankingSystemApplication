@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,7 +124,6 @@ public class TransactionControllerIT {
         registry.add("spring.flyway.url", () -> jdbcUrl);
         registry.add("spring.flyway.user", () -> username);
         registry.add("spring.flyway.password", () -> password);
-
     }
 
     @BeforeAll
@@ -169,6 +169,20 @@ public class TransactionControllerIT {
     }
 
     @Test
+    @DisplayName("Should not create transaction with non-existing account")
+    void shouldFailToCreateTransactionWithNonExistentAccount() throws Exception {
+        TransactionDTO dto = createTransactionDTO();
+        accountRepository.deleteAll();
+
+        mockMvc.perform(post("/bank/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isNotFound());
+
+        assertThat(transactionRepository.findAll()).isEmpty();
+    }
+
+    @Test
     @DisplayName("Should not create transaction because of transactionDTO = null")
     void shouldReturnBadRequestStatusBecauseOfNullTransationDTO() throws Exception {
         mockMvc.perform(post("/bank/transactions")
@@ -179,7 +193,7 @@ public class TransactionControllerIT {
 
     // если валидация не проходит, возвращает MethodArgumentNotValidException
     @Test
-    @DisplayName("Should return BAD_REQUEST status because transactionDTO fiels are not initialized")
+    @DisplayName("Should return BAD_REQUEST status because transactionDTO fields are not initialized")
     void shouldReturnValidationErrorForMissingRequiredFields() throws Exception {
         TransactionDTO invalidDTO = new TransactionDTO();
 
@@ -247,8 +261,7 @@ public class TransactionControllerIT {
         accountRepository.save(accountToEntity);
         transactionRepository.save(transaction);
 
-        mockMvc.perform(get("/bank/transactions/exceeded")
-                        .param("accountId", VALID_ACCOUNT_ID_FROM.toString()))
+        mockMvc.perform(get("/bank/transactions/exceeded/" + VALID_ACCOUNT_ID_FROM))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].fromAccount").value(VALID_ACCOUNT_ID_FROM))
@@ -263,22 +276,18 @@ public class TransactionControllerIT {
     @DisplayName("Should return BAD_REQUEST for negative account id while getting transactions with limit exceeded")
     void shouldReturnBadRequestForNegativeAccountIdWhileGettingTransactionsWithLimitExceeded() throws Exception {
 
-        mockMvc.perform(get("/bank/transactions/exceeded")
-                        .param("accountId", INVALID_ACCOUNT_ID.toString()))
+        mockMvc.perform(get("/bank/transactions/exceeded/" + INVALID_ACCOUNT_ID))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Invalid input: Invalid account Id"));
     }
 
     @Test
-    @DisplayName("Should return BAD_REQUEST for null account id while getting transactions with limit exceeded")
-    void shouldReturnBadRequestForNullAccountIdWhileGettingTransactionsWithLimitExceeded() throws Exception {
+    @DisplayName("Should return BAD_REQUEST for string/invalid account id while getting transactions with limit exceeded")
+    void shouldReturnBadRequestForInvalidAccountIdWhileGettingTransactionsWithLimitExceeded() throws Exception {
 
-        mockMvc.perform(get("/bank/transactions/exceeded")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(null)))
+        mockMvc.perform(get("/bank/transactions/exceeded/abc"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors").isArray())
-                .andExpect(jsonPath("$.errors[0]").value("Argument 'accountId' is required"));
+                .andExpect(jsonPath("$.error").exists());
     }
 
     @Test
@@ -294,11 +303,134 @@ public class TransactionControllerIT {
         transactionRepository.save(transaction);
         accountRepository.delete(accountFromEntity);
 
-        mockMvc.perform(get("/bank/transactions/exceeded")
-                        .param("accountId", VALID_ACCOUNT_ID_FROM.toString()))
+        mockMvc.perform(get("/bank/transactions/exceeded/" + VALID_ACCOUNT_ID_FROM))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Resource not found: Account not found"));
     }
+
+    @Test
+    @DisplayName("Should return transactions by category successfully")
+    void shouldReturnTransactionsByCategorySuccessfully() throws Exception {
+        TransactionEntity transaction = createFullTransactionEntity();
+        transactionRepository.save(transaction);
+
+        mockMvc.perform(get("/bank/transactions/byCategory")
+                    .param("category", TEST_CATEGORY.name()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].fromAccount").value(VALID_ACCOUNT_ID_FROM))
+                .andExpect(jsonPath("$[0].sum").value(TEST_SUM.doubleValue()))
+                .andExpect(jsonPath("$[0].expenseCategory").value(TEST_CATEGORY.name()));
+    }
+
+    @Test
+    @DisplayName("Should return empty list of transactions by category")
+    void shouldReturnEmptyListOfTransactionsByCategory() throws Exception {
+        mockMvc.perform(get("/bank/transactions/byCategory")
+                    .param("category", TEST_CATEGORY.name()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @DisplayName("Should return BAD_REQUEST because of invalid category")
+    void shouldReturnBadRequestBecauseOfInvalidCategory() throws Exception {
+        mockMvc.perform(get("/bank/transactions/byCategory")
+                    .param("category", "INVALID"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").exists());
+    }
+
+    @Test
+    @DisplayName("Should return all transactions successfully")
+    void shouldReturnAllTransactions() throws Exception {
+        TransactionEntity transaction = createFullTransactionEntity();
+        transactionRepository.save(transaction);
+
+        mockMvc.perform(get("/bank/transactions")
+                    .param("category", TEST_CATEGORY.name()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].fromAccount").value(VALID_ACCOUNT_ID_FROM))
+                .andExpect(jsonPath("$[0].sum").value(TEST_SUM.doubleValue()))
+                .andExpect(jsonPath("$[0].expenseCategory").value(TEST_CATEGORY.name()));
+    }
+
+    @Test
+    @DisplayName("Should return empty list of all transactions")
+    void ShouldReturnEmptyListOfTransactions() throws Exception {
+        mockMvc.perform(get("/bank/transactions")
+                    .param("category", TEST_CATEGORY.name()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @DisplayName("Should return all transactions by id successfully")
+    void shouldReturnAllTransactionsById() throws Exception {
+        TransactionEntity transaction = createFullTransactionEntity();
+        transactionRepository.save(transaction);
+
+        mockMvc.perform(get("/bank/transactions/account/" + VALID_ACCOUNT_ID_FROM)
+                    .param("category", TEST_CATEGORY.name()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].fromAccount").value(VALID_ACCOUNT_ID_FROM))
+                .andExpect(jsonPath("$[0].sum").value(TEST_SUM.doubleValue()))
+                .andExpect(jsonPath("$[0].expenseCategory").value(TEST_CATEGORY.name()));
+    }
+
+    @Test
+    @DisplayName("Should return empty list of transactions by id successfully")
+    void shouldReturnEmptyListOfTransactionsById() throws Exception {
+        mockMvc.perform(get("/bank/transactions/account/" + VALID_ACCOUNT_ID_FROM)
+                    .param("exceededOnly", String.valueOf(true)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @DisplayName("Should return all transactions by id and exceeded successfully")
+    void shouldReturnAllTransactionsByIdWithExceededOnly() throws Exception {
+        TransactionEntity transaction = createFullTransactionEntity();
+        transaction.setLimitExceeded(true);
+        transactionRepository.save(transaction);
+
+        mockMvc.perform(get("/bank/transactions/account/" + VALID_ACCOUNT_ID_FROM)
+                    .param("exceededOnly", String.valueOf(true)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].fromAccount").value(VALID_ACCOUNT_ID_FROM))
+                .andExpect(jsonPath("$[0].sum").value(TEST_SUM.doubleValue()))
+                .andExpect(jsonPath("$[0].expenseCategory").value(TEST_CATEGORY.name()));
+    }
+
+    @Test
+    @DisplayName("Should return empty list of transactions by id and exceeded successfully")
+    void shouldReturnEmptyListOfTransactionsByIdWithExceededOnly() throws Exception {
+        mockMvc.perform(get("/bank/transactions/account/" + VALID_ACCOUNT_ID_FROM)
+                    .param("exceededOnly", String.valueOf(true)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @DisplayName("Should return BAD_REQUEST for string/invalid account id")
+    void shouldReturnBadRequestForInvalidAccountId() throws Exception {
+
+        mockMvc.perform(get("/bank/transactions/account/abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").exists());
+    }
+
 
     private TransactionDTO createTransactionDTO() {
         TransactionDTO transactionDTO = new TransactionDTO();
@@ -350,6 +482,26 @@ public class TransactionControllerIT {
         transactionEntity.setLimitDateTimeAtTime(LIMIT_DATE_TIME);
         transactionEntity.setLimitSumAtTime(LIMIT_SUM);
         transactionEntity.setLimitCurrencyAtTime(LIMIT_CURRENCY);
+
+        return transactionEntity;
+    }
+    private TransactionEntity createFullTransactionEntity(){
+        LimitEntity limitEntity = createLimitEntity();
+        AccountEntity accountFrom = createAccountFromEntity();
+        AccountEntity accountTo = createAccountToEntity();
+
+        TransactionEntity transactionEntity = new TransactionEntity();
+        transactionEntity.setCurrency(TEST_CURRENCY);
+        transactionEntity.setCategory(TEST_CATEGORY);
+        transactionEntity.setSum(TEST_SUM);
+        transactionEntity.setTransactionTime(TEST_DATE);
+        transactionEntity.setLimitExceeded(false);
+        transactionEntity.setLimit(limitEntity);
+        transactionEntity.setLimitDateTimeAtTime(LIMIT_DATE_TIME);
+        transactionEntity.setLimitSumAtTime(LIMIT_SUM);
+        transactionEntity.setLimitCurrencyAtTime(LIMIT_CURRENCY);
+        transactionEntity.setAccountFrom(accountFrom);
+        transactionEntity.setAccountTo(accountTo);
 
         return transactionEntity;
     }

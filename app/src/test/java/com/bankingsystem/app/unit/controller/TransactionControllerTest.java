@@ -90,7 +90,7 @@ public class TransactionControllerTest {
 
         assertThatThrownBy(() -> controller.getTransactionsExceededLimit(INVALID_ACCOUNT_ID)).
                 isInstanceOf(IllegalArgumentException.class).
-                hasMessage("Invalid accountId");
+                hasMessage("Invalid account Id");
 
         verify(transactionService, never()).getTransactionsByAccountIdWhichExceedLimit(any());
     }

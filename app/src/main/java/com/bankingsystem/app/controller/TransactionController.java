@@ -42,8 +42,8 @@ public class TransactionController {
                  .body(transaction);
     }
 
-    @GetMapping("/exceeded")
-    public ResponseEntity<List<TransactionDTO>> getTransactionsExceededLimit(@RequestParam Long accountId) {
+    @GetMapping("/exceeded/{accountId}")
+    public ResponseEntity<List<TransactionDTO>> getTransactionsExceededLimit(@PathVariable Long accountId) {
         if(accountId <= 0) {
             throw new IllegalArgumentException("Invalid account Id");
         }
@@ -60,16 +60,16 @@ public class TransactionController {
                 .ok(exceededTransactions);
     }
 
+    @GetMapping("/byCategory")
+    public ResponseEntity<List<TransactionDTO>> getTransactionsByCategory(@RequestParam Category category){
+        return ResponseEntity
+                .ok(transactionService.getTransactionsByCategory(category));
+    }
+
     @GetMapping
     public ResponseEntity<List<TransactionDTO>> getAllTransactions(){
         return ResponseEntity
                 .ok(transactionService.getAllTransactions());
-    }
-
-    @GetMapping("/{category}")
-    public ResponseEntity<List<TransactionDTO>> getTransactionsByCategory(@PathVariable Category category){
-        return ResponseEntity
-                .ok(transactionService.getTransactionsByCategory(category));
     }
 
     @GetMapping("/account/{id}")
