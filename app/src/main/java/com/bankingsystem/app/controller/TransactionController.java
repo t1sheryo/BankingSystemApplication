@@ -29,9 +29,7 @@ public class TransactionController {
 
     @PostMapping
     // null, то выбросит HttpMessageNotReadableException
-    public ResponseEntity<TransactionEntity> createTransaction(@Valid @RequestBody TransactionDTO transactionDTO)
-    {
-
+    public ResponseEntity<TransactionEntity> createTransaction(@Valid @RequestBody TransactionDTO transactionDTO) {
         log.info("create Transaction for DTO: {}", transactionDTO);
 
         TransactionEntity transaction = transactionService.createTransaction(transactionDTO);

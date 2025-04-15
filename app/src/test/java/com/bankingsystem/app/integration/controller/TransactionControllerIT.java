@@ -1,5 +1,6 @@
 package com.bankingsystem.app.integration.controller;
 
+import com.bankingsystem.app.controller.TransactionController;
 import com.bankingsystem.app.entity.AccountEntity;
 import com.bankingsystem.app.entity.LimitEntity;
 import com.bankingsystem.app.entity.TransactionEntity;
@@ -10,6 +11,7 @@ import com.bankingsystem.app.model.TransactionDTO;
 import com.bankingsystem.app.repository.AccountRepository;
 import com.bankingsystem.app.repository.TransactionRepository;
 import com.bankingsystem.app.service.impl.AccountService;
+import com.bankingsystem.app.service.impl.TransactionService;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import jakarta.transaction.Transactional;
@@ -18,7 +20,9 @@ import org.junit.jupiter.api.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -70,7 +74,7 @@ public class TransactionControllerIT {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    private  ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
     @Autowired
     private AccountRepository accountRepository;
     @Autowired
@@ -105,9 +109,6 @@ public class TransactionControllerIT {
     static{
         mysqlContainer.start();
     }
-
-    @Autowired
-    private AccountService accountService;
 
     // Это нужно, потому что Testcontainers запускает MySQL на случайном порту,
     // и мы не можем заранее знать точный URL.
@@ -151,7 +152,6 @@ public class TransactionControllerIT {
         mysqlContainer.stop();
     }
 
-    // FIXME: нет проверки в transactionservice на то что есть аккаунт в репозитории
     @Test
     @DisplayName("Should create Transaction Successfully")
     void shouldCreateTransactionSuccessfully() throws Exception {
@@ -429,6 +429,20 @@ public class TransactionControllerIT {
         mockMvc.perform(get("/bank/transactions/account/abc"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").exists());
+    }
+
+    @Test
+    @DisplayName("Should return all transactions by account id with exceededOnly false")
+    void shouldReturnAllTransactionsByIdWithExceededOnlyFalse() throws Exception {
+        TransactionEntity transaction = createFullTransactionEntity();
+        transactionRepository.save(transaction);
+
+        mockMvc.perform(get("/bank/transactions/account/" + VALID_ACCOUNT_ID_FROM)
+                .param("exceededOnly", String.valueOf(false)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].fromAccount").value(VALID_ACCOUNT_ID_FROM));
     }
 
 

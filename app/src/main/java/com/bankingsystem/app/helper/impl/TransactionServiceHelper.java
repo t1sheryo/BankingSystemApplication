@@ -58,7 +58,7 @@ public class TransactionServiceHelper implements TransactionServiceHelperInterfa
         AccountEntity accountTo = accountService.getAccountById(accountIdTo);
 
         if (accountFrom == null || accountTo == null) {
-            throw new IllegalArgumentException("Account not found");
+            throw new IllegalStateException("Account not found");
         }
 
         return new AccountPair(accountFrom, accountTo);
