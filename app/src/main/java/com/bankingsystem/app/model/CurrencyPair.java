@@ -1,10 +1,14 @@
 package com.bankingsystem.app.model;
 
 import com.bankingsystem.app.enums.Currency;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-// Вспомогательный класс для хранения пар
-// { currencyFrom, currencyTo }
-public record CurrencyPair(Currency from, Currency to) {
+@Data
+@AllArgsConstructor
+public class CurrencyPair {
+    private Currency currencyFrom;
+    private Currency currencyTo;
 }

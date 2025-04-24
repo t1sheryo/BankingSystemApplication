@@ -1,12 +1,13 @@
-package com.bankingsystem.app.services.impl;
+package com.bankingsystem.app.service.impl;
 
-import com.bankingsystem.app.customExceptions.LimitUpdateNotAllowedException;
+import com.bankingsystem.app.customException.LimitUpdateNotAllowedException;
 import com.bankingsystem.app.entity.LimitEntity;
-import com.bankingsystem.app.model.TransactionDTO;
+import com.bankingsystem.app.enums.Category;
+import com.bankingsystem.app.enums.Currency;
 import com.bankingsystem.app.model.limits.LimitRequest;
 import com.bankingsystem.app.model.limits.LimitResponse;
 import com.bankingsystem.app.repository.LimitRepository;
-import com.bankingsystem.app.services.interfaces.LimitServiceInterface;
+import com.bankingsystem.app.service.interfaces.LimitServiceInterface;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +15,10 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j // логирование
@@ -33,10 +34,6 @@ public class LimitService implements LimitServiceInterface {
         this.limitRepository = limitRepository;
     }
 
-
-    // FIXME: сделать, чтобы клиент не мог обновлять лимит, когда захочет.
-    //  Сделать ограничение на единицу времени
-
     @Override
     @Transactional
     // @Transactional гарантирует, что вся операция
@@ -45,9 +42,21 @@ public class LimitService implements LimitServiceInterface {
     // либо, в случае ошибки,
     // ничего не будет сохранено (rollback).
     public LimitEntity setLimit(LimitRequest limit) {
+        if(limit.getLimit().compareTo(BigDecimal.ZERO) <= 0) {
+            log.error("Limit must be greater than zero");
+            throw new IllegalArgumentException("Limit cannot be less than 0");
+        }
+
         OffsetDateTime now = OffsetDateTime.now();
         LimitEntity existingLimit = limitRepository.getLimitByAccountIdAndCategory(limit.getAccountId(), limit.getCategory());
+
+        if(existingLimit == null) {
+            log.error("Limit not found for account id {} ", limit.getAccountId());
+            throw new IllegalStateException("Limit not found for account id " + limit.getAccountId());
+        }
+
         OffsetDateTime prevUpdateTime = existingLimit.getLimitDateTime();
+        BigDecimal prevRemainder = existingLimit.getLimitRemainder();
 
         // Подсчитываем сколько времени прошло с момента прошлого обновления лимита
         long monthsBetween = ChronoUnit.MONTHS.between(
@@ -56,7 +65,7 @@ public class LimitService implements LimitServiceInterface {
         );
 
         // Проверяем, превышает ли период 1 месяц
-        if(monthsBetween <= COOLDOWN_PERIOD_TO_SET_NEW_LIMIT_IN_MONTH){
+        if (monthsBetween <= COOLDOWN_PERIOD_TO_SET_NEW_LIMIT_IN_MONTH) {
             // Логирование того, что пользователь слишком рано хочет обновить лимит
             log.warn("Attempt to update limit too soon. Account: {}, Category: {}, Last update: {}",
                     limit.getAccountId(),
@@ -71,76 +80,57 @@ public class LimitService implements LimitServiceInterface {
             );
         }
 
-        // Если лимит существует - обновляем его
-        if (existingLimit != null) {
-            existingLimit.setLimitSum(limit.getLimit());
-            existingLimit.setLimitCurrencyShortName(limit.getLimitCurrency());
-            existingLimit.setLimitDateTime(now);
-            return limitRepository.save(existingLimit);
-        }
-
-        // Если не существует - создаем новый
-        LimitEntity newLimit = new LimitEntity();
-        newLimit.setAccountId(limit.getAccountId());
-        newLimit.setLimitSum(limit.getLimit());
-        newLimit.setCategory(limit.getCategory());
-        newLimit.setLimitDateTime(now);
-        newLimit.setLimitCurrencyShortName(limit.getLimitCurrency());
-
-        return limitRepository.save(newLimit);
+        existingLimit.setLimitSum(limit.getLimit());
+        existingLimit.setLimitRemainder(prevRemainder.add(limit.getLimit().subtract(existingLimit.getLimitSum())));
+        existingLimit.setLimitCurrencyShortName(Currency.USD);
+        existingLimit.setLimitDateTime(now);
+        log.info("Limit created: " + existingLimit);
+        return limitRepository.save(existingLimit);
     }
 
     @Override
     public List<LimitResponse> getLimitsByAccountId(Long accountId) {
         List<LimitEntity> limits = limitRepository.findByAccountId(accountId);
+        log.info("Limits retrieved: {} ", limits);
 
         return limits.stream()
-                .map(this::convertToLimitResponse)
+                .map(this::convertLimitEntityToLimitResponse)
                 .collect(Collectors.toList());
+    }
+    @Override
+    public Optional<LimitEntity> getLimitByAccountIdAndCategory(Long accountId, Category category) {
+        log.info("getLimitByAccountIdAndCategory: accountId: {} category: {}", accountId, category);
+        return limitRepository.findFirstByAccountIdAndCategoryOrderByLimitDateTimeDesc(accountId, category);
     }
 
     @Override
-    public LimitEntity getLimitByDBId(Long DBId){
+    public LimitEntity getLimitByDBId(Long DBId) {
+        log.info("getLimitByDBId: DBId: {}", DBId);
         return limitRepository.findById(DBId).orElse(null);
     }
 
     @Override
     public List<LimitResponse> getAllLimits() {
         List<LimitEntity> limits = limitRepository.findAll();
+        log.info("Limits retrieved: " + limits);
+
         return limits.stream()
-                .map(this::convertToLimitResponse)
+                .map(this::convertLimitEntityToLimitResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
-    @Transactional
-    // @Transactional гарантирует, что вся операция
-    // будет выполнена как единое целое:
-    // либо все изменения будут успешно сохранены в базе данных,
-    // либо, в случае ошибки,
-    // ничего не будет сохранено (rollback).
-    public void updateRemainder(TransactionDTO transaction) {
-        LimitEntity limitEntity = limitRepository.findById(transaction.getLimitId()).orElse(null);
-        BigDecimal transactionValue = transaction.getSum();
-
-        if(limitEntity == null){
-            log.error("No limit found with id: {}", transaction.getLimitId());
-            return ;
-        }
-
-        limitEntity.setLimitRemainder(limitEntity.getLimitRemainder().subtract(transactionValue));
-
-        // Грубо говоря, тут происходит перезапись объекта limitEntity в БД
-        // Тут вызывается механизм "dirty checking"
-        // и Hibernate автоматически обновляет только те поля, которые были изменены
-        limitRepository.save(limitEntity);
+    public LimitEntity saveLimit(LimitEntity limit) {
+        log.info("Saving limit {}", limit);
+        return limitRepository.save(limit);
     }
 
-    // вспомогательный метод для преобразования
-    // LimitEntity в LimitResponse
-    private LimitResponse convertToLimitResponse(LimitEntity limitEntity) {
+    private LimitResponse convertLimitEntityToLimitResponse(LimitEntity limitEntity) {
+        if(limitEntity.getAccount() == null) {
+            throw new IllegalArgumentException("Account is not set for limitId " + limitEntity.getId());
+        }
         LimitResponse response = new LimitResponse();
-        response.setAccountId(limitEntity.getAccountId());
+        response.setAccountId(limitEntity.getAccount().getId());
         response.setCategory(limitEntity.getCategory());
         response.setLimit(limitEntity.getLimitSum());
         response.setLastUpdate(limitEntity.getLimitDateTime());

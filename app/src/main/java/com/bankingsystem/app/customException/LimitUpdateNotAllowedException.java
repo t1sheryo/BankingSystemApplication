@@ -1,4 +1,4 @@
-package com.bankingsystem.app.customExceptions;
+package com.bankingsystem.app.customException;
 
 public class LimitUpdateNotAllowedException extends RuntimeException {
     public LimitUpdateNotAllowedException(String message) {

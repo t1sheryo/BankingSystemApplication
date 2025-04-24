@@ -10,6 +10,7 @@ import java.time.OffsetDateTime;
 @Entity
 @Setter
 @Getter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 // uniqueConstraints добавляет ограничение уникальности для столбцов
@@ -23,7 +24,6 @@ public class ExchangeRateEntity {
     @EmbeddedId // указывает, что первичный ключ является составным
     // в классе ExchangeRateCompositePrimaryKey сокрыты поля currencyFrom и currencyTo
     private ExchangeRateCompositePrimaryKey id;
-    //добавил precision 19 и scale 6 для явного указания размера в бд
     @Column(name = "rate", nullable = false, precision = 19, scale = 6)
     private BigDecimal rate;
 

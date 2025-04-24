@@ -1,0 +1,14 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+  twelvedata:
+    api-key: 7a79c306727443819a002da0398f5ce7
+    api-url: http://localhost:8089
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration

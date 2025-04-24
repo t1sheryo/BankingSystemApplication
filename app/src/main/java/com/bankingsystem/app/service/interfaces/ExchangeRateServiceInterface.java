@@ -1,4 +1,4 @@
-package com.bankingsystem.app.services.interfaces;
+package com.bankingsystem.app.service.interfaces;
 
 import com.bankingsystem.app.entity.ExchangeRateEntity;
 import com.bankingsystem.app.enums.Currency;
@@ -10,4 +10,5 @@ public interface ExchangeRateServiceInterface {
     public ExchangeRateEntity updateExchangeRateManually(Currency currencyFrom, Currency currencyTo);
     public void updateExchangeRateAutomatically();
     public Optional<ExchangeRateEntity> getExchangeRate(Currency from, Currency to, LocalDate date);
+    public void saveExchangeRate(ExchangeRateEntity exchangeRate);
 }

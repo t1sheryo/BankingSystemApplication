@@ -1,11 +1,17 @@
+CREATE TABLE accounts(
+    id BIGINT AUTO_INCREMENT PRIMARY KEY
+);
+
 CREATE TABLE limits (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    limit_sum DECIMAL(15,2) NOT NULL,
+    limit_sum DECIMAL(15,2) NOT NULL DEFAULT 1000.00,
     expense_category ENUM('PRODUCT','SERVICE') NOT NULL,
     limit_datetime TIMESTAMP NOT NULL,
-    limit_currency_shortname ENUM('USD', 'RUB', 'EUR') NOT NULL,
+    limit_currency_shortname ENUM('USD', 'RUB', 'EUR') NOT NULL DEFAULT 'USD',
     limit_remainder DECIMAL NOT NULL,
-    account_id BIGINT NOT NULL
+    account_id BIGINT NOT NULL,
+    FOREIGN KEY (account_id) REFERENCES accounts(id),
+    INDEX idx_account_category (account_id, expense_category)
 );
 
 CREATE TABLE transactions (
@@ -18,7 +24,14 @@ CREATE TABLE transactions (
     datetime TIMESTAMP NOT NULL,
     limit_exceeded BOOLEAN NOT NULL DEFAULT FALSE,
     limit_id BIGINT NOT NULL,
-    FOREIGN KEY (limit_id) REFERENCES limits(id)
+    limit_datatime_at_time TIMESTAMP NOT NULL,
+    limit_sum_at_time DECIMAL NOT NULL,
+    limit_currency_at_time ENUM('USD','RUB', 'EUR') NOT NULL,
+    FOREIGN KEY (account_from) REFERENCES accounts(id),
+    FOREIGN KEY (account_to) REFERENCES accounts(id),
+    FOREIGN KEY (limit_id) REFERENCES limits(id),
+    INDEX idx_account_from_category (account_from, expense_category),
+    INDEX idx_transaction_time (datetime)
 );
 
 CREATE TABLE  exchange_rates(
@@ -26,7 +39,7 @@ CREATE TABLE  exchange_rates(
     currency_to VARCHAR(10) NOT NULL,
     rate DECIMAL(19,6) NOT NULL,
     rate_date DATE NOT NULL,
-    update_time DATETIME NOT NULL,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (currency_from, currency_to),
     CONSTRAINT uq_currency_from_to_date UNIQUE (currency_from, currency_to, rate_date)
 );

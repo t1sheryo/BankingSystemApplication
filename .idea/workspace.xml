@@ -5,10 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="64bcf87b-f166-4323-9ad8-8e2216106e39" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/controller/ExchangeRateController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/bankingsystem/app/model/ExchangeRateResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/resources/application.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/test/java/integration/controller/TransactionControllerIntegrationTest.java" beforeDir="false" />
     </list>
+    <list id="5811ff6e-d1b4-4ea3-82e0-00256c4f10a5" name="Changes by t1sheryo" comment="">
+      <change beforePath="$PROJECT_DIR$/app/src/test/java/com/bankingsystem/app/unit/helper/TransactionServiceHelperTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/test/java/com/bankingsystem/app/unit/helper/TransactionServiceHelperTest.java" afterDir="false" />
+    </list>
+    <list id="261db75a-a75e-443c-961e-7614201a8522" name="Changes by timofey" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -17,6 +23,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="Interface" />
         <option value="Class" />
       </list>
     </option>
@@ -64,6 +71,24 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "JUnit.AccountServiceTest.shouldReturnAccountEntityById.executor": "Run",
+    "JUnit.AccountServiceTest.shouldReturnNullWhenAccountNotFound.executor": "Run",
+    "JUnit.TransactionControllerIntegrationTest.executor": "Run",
+    "JUnit.TransactionControllerIntegrationTest.shouldCreateTransactionSuccessfully.executor": "Run",
+    "JUnit.TransactionControllerIntegrationTest.shouldReturnBadRequestStatusBecauseOfNullTransationDTO.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldBuildTransactionEntitySuccessfully.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldConvertTransactionDTOFromTransactionEntity.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldConvertTransactionDTOFromTransactionEntitySuccessfully.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldReturnAmountInUSD.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldReturnExceptionWhenLimitExceeded.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldReturnExceptionWhenLimitNotFound.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldReturnExceptionWhenLimitRemainderIsNull.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldReturnExceptionWhenRemainderIsNull.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldReturnFalseWhenLimitIsNotExceeded.executor": "Debug",
+    "JUnit.TransactionServiceHelperTest.shouldReturnTrueWhenLimitExceeded.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldReturnUpdateLimitRemainder.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldThrowExceptionWhenAmountIsZero.executor": "Run",
+    "JUnit.TransactionServiceHelperTest.shouldValidateAccountsSuccessfully.executor": "Run",
     "RequestMappingsPanelOrder0": "0",
     "RequestMappingsPanelOrder1": "1",
     "RequestMappingsPanelWidth0": "75",
@@ -79,14 +104,93 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Libraries",
+    "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "reference.projectsettings.compiler.annotationProcessors",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager">
+  <component name="RunManager" selected="JUnit.TransactionControllerIntegrationTest.shouldReturnBadRequestStatusBecauseOfNullTransationDTO">
+    <configuration name="TransactionControllerIntegrationTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="impl" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.bankingsystem.app.integration.controller.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.bankingsystem.app.integration.controller" />
+      <option name="MAIN_CLASS_NAME" value="com.bankingsystem.app.integration.controller.TransactionControllerIntegrationTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TransactionControllerIntegrationTest.shouldCreateTransactionSuccessfully" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="impl" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.bankingsystem.app.integration.controller.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.bankingsystem.app.integration.controller" />
+      <option name="MAIN_CLASS_NAME" value="com.bankingsystem.app.integration.controller.TransactionControllerIntegrationTest" />
+      <option name="METHOD_NAME" value="shouldCreateTransactionSuccessfully" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TransactionControllerIntegrationTest.shouldReturnBadRequestStatusBecauseOfNullTransationDTO" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="impl" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.bankingsystem.app.integration.controller.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.bankingsystem.app.integration.controller" />
+      <option name="MAIN_CLASS_NAME" value="com.bankingsystem.app.integration.controller.TransactionControllerIntegrationTest" />
+      <option name="METHOD_NAME" value="shouldReturnBadRequestStatusBecauseOfNullTransationDTO" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TransactionServiceHelperTest.shouldReturnFalseWhenLimitIsNotExceeded" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="impl" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.bankingsystem.app.unit.helper.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.bankingsystem.app.unit.helper" />
+      <option name="MAIN_CLASS_NAME" value="com.bankingsystem.app.unit.helper.TransactionServiceHelperTest" />
+      <option name="METHOD_NAME" value="shouldReturnFalseWhenLimitIsNotExceeded" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TransactionServiceHelperTest.shouldThrowExceptionWhenAmountIsZero" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="impl" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.bankingsystem.app.unit.helper.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.bankingsystem.app.unit.helper" />
+      <option name="MAIN_CLASS_NAME" value="com.bankingsystem.app.unit.helper.TransactionServiceHelperTest" />
+      <option name="METHOD_NAME" value="shouldThrowExceptionWhenAmountIsZero" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="AppApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
       <module name="impl" />
@@ -95,6 +199,15 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.TransactionControllerIntegrationTest.shouldReturnBadRequestStatusBecauseOfNullTransationDTO" />
+        <item itemvalue="JUnit.TransactionControllerIntegrationTest" />
+        <item itemvalue="JUnit.TransactionControllerIntegrationTest.shouldCreateTransactionSuccessfully" />
+        <item itemvalue="JUnit.TransactionServiceHelperTest.shouldReturnFalseWhenLimitIsNotExceeded" />
+        <item itemvalue="JUnit.TransactionServiceHelperTest.shouldThrowExceptionWhenAmountIsZero" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -121,6 +234,18 @@
       <workItem from="1742832614537" duration="751000" />
       <workItem from="1742833400624" duration="8004000" />
       <workItem from="1743150166592" duration="423000" />
+      <workItem from="1743278696387" duration="4011000" />
+      <workItem from="1743284388599" duration="2432000" />
+      <workItem from="1743325642330" duration="989000" />
+      <workItem from="1743443521359" duration="8285000" />
+      <workItem from="1743508690478" duration="1340000" />
+      <workItem from="1743510108879" duration="11582000" />
+      <workItem from="1743601616030" duration="6095000" />
+      <workItem from="1743755183715" duration="5653000" />
+      <workItem from="1743786769765" duration="9416000" />
+      <workItem from="1744118667808" duration="15245000" />
+      <workItem from="1744213064476" duration="14966000" />
+      <workItem from="1744231545723" duration="178000" />
     </task>
     <servers />
   </component>

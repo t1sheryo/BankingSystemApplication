@@ -5,11 +5,13 @@ import com.bankingsystem.app.enums.Category;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 @Data
+@Builder
 @AllArgsConstructor
 //добавил для поддержки десериализации JSON
 @NoArgsConstructor
@@ -23,6 +25,6 @@ public class LimitRequest {
     private Category category;
     @NotNull
     //убрал final чтоб пользователь мог выбрать валюту
-    private  Currency limitCurrency = Currency.USD; // пока что всегда в USD
+    private Currency limitCurrency;
     // можно сделать по другому на выбор пользователя например
 }

@@ -5,15 +5,21 @@ import com.bankingsystem.app.enums.Currency;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Entity
 @Getter
 @Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "limits")
+@Table(name = "limits", indexes = {
+        //Индексация для быстрого поиска аккаунта и категории для быстроты работы функции
+        // LimitService.getLimitByAccountAndCategory
+        @Index(name = "idx_account_category", columnList = "account_id,expense_category")
+})
 public class LimitEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,8 +30,8 @@ public class LimitEntity {
     private BigDecimal limitSum;
 
     @NotNull
-    @Column(name = "expense_category")
     @Enumerated(EnumType.STRING)
+    @Column(name = "expense_category")
     private Category category;
 
     @NotNull
@@ -33,6 +39,7 @@ public class LimitEntity {
     private OffsetDateTime limitDateTime;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     @Column(name = "limit_currency_shortname")
     private Currency limitCurrencyShortName;
 
@@ -41,6 +48,7 @@ public class LimitEntity {
     private BigDecimal limitRemainder;
 
     @NotNull
-    @Column(name = "account_id")
-    private Long accountId;
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private AccountEntity account;
 }

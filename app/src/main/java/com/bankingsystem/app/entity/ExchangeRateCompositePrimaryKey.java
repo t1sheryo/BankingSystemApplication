@@ -5,10 +5,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -16,16 +14,15 @@ import java.util.Objects;
 // для него не обходимо создавать таблицу в бд, не нужна аннотация @Id
 @Getter
 @Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExchangeRateCompositePrimaryKey implements Serializable {
-    @Enumerated(EnumType.STRING) // говорит, что используемый тип является перечислением
-    // и необходимо в параметрах указать каким типом он будет сохраняться в бд
+    @Enumerated(EnumType.STRING)
     @Column(name = "currency_from", nullable = false)
     private Currency currencyFrom;
 
-    @Enumerated(EnumType.STRING) // говорит, что используемый тип является перечислением
-    // и необходимо в параметрах указать каким типом он будет сохраняться в бд
+    @Enumerated(EnumType.STRING)
     @Column(name = "currency_to", nullable = false)
     private Currency currencyTo;
 
