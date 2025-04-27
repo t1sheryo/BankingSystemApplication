@@ -68,7 +68,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body("Invalid input: " + e.getMessage());
+                .body(error.toString());
     }
 
     @ExceptionHandler(IllegalStateException.class)
@@ -83,7 +83,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body("Resource not found: " + e.getMessage());
+                .body(error.toString());
     }
 
     @ExceptionHandler(LimitUpdateNotAllowedException.class)
@@ -132,12 +132,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException ex) {
         log.error("Validation error: {}", ex.getMessage());
 
-        // Собираем только сообщения об ошибках
         List<String> errors = ex.getBindingResult().getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.toList());
 
-        // Формируем простой ответ
         Map<String, Object> response = new HashMap<>();
         response.put("errors", errors);
 
