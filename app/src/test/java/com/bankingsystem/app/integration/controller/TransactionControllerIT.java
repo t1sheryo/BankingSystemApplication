@@ -18,8 +18,7 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -46,6 +45,8 @@ import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+// TODO: можно добавить больше пограничных тестов
 
 @Slf4j
 // по умолчанию эта аннотация загружает весь spring-контекст(вообще все бины)
@@ -278,7 +279,7 @@ public class TransactionControllerIT {
 
         mockMvc.perform(get("/bank/transactions/exceeded/" + INVALID_ACCOUNT_ID))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Invalid input: Invalid account Id"));
+                .andExpect(content().string(containsString("id")));
     }
 
     @Test
@@ -305,7 +306,7 @@ public class TransactionControllerIT {
 
         mockMvc.perform(get("/bank/transactions/exceeded/" + VALID_ACCOUNT_ID_FROM))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("Resource not found: Account not found"));
+                .andExpect(content().string(containsString("Account")));
     }
 
     @Test

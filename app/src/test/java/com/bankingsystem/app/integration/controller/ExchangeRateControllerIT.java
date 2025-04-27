@@ -7,12 +7,12 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.TestInstance;
+import net.bytebuddy.asm.Advice;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -20,7 +20,16 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import java.time.LocalDate;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 
 @Slf4j
 @SpringBootTest
@@ -41,9 +50,12 @@ public class ExchangeRateControllerIT {
     ExchangeRateService exchangeRateService;
     @Autowired
     ObjectMapper objectMapper;
+    private static final LocalDate CURRENT_TIME = LocalDate.now();
+    private static final LocalDate FUTURE_TIME = LocalDate.now().plusDays(1);
+    private static final String CURRENT_TIME_STRING = CURRENT_TIME.toString();
+    private static final String FUTURE_TIME_STRING = FUTURE_TIME.toString();
 
-
-    static{
+    static {
         mysqlContainer.start();
     }
 
@@ -64,7 +76,7 @@ public class ExchangeRateControllerIT {
 
     @BeforeAll
     void beforeAll() throws Exception{
-        wireMockServer = new WireMockServer(8089);
+        wireMockServer = new WireMockServer(8090);
         wireMockServer.start();
 
         wireMockServer.resetAll();
@@ -85,5 +97,95 @@ public class ExchangeRateControllerIT {
     void afterAll() {
         wireMockServer.stop();
         mysqlContainer.stop();
+    }
+
+    @Test
+    @DisplayName("Should return exchange rate successfully without date param")
+    void shouldReturnExchangeRateSuccessfullyWithoutDate() throws Exception {
+        mockMvc.perform(get("/bank/exchange-rates")
+                        .param("from", "EUR")
+                        .param("to", "USD"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.currencyFrom").value("EUR"))
+                .andExpect(jsonPath("$.currencyTo").value("USD"));
+    }
+
+    @Test
+    @DisplayName("Should return exchange rate successfully with date param")
+    void shouldReturnExchangeRateSuccessfullyWithDate() throws Exception {
+        mockMvc.perform(get("/bank/exchange-rates")
+                        .param("from", "EUR")
+                        .param("to", "USD")
+                        .param("date", CURRENT_TIME_STRING))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.currencyFrom").value("EUR"))
+                .andExpect(jsonPath("$.currencyTo").value("USD"));
+    }
+
+    @Test
+    @DisplayName("Should return BAD_REQUEST for invalid currency")
+    void shouldReturnBadRequestForInvalidCurrency() throws Exception {
+        mockMvc.perform(get("/bank/exchange-rates")
+                        .param("from", "XYZ")
+                        .param("to", "USD"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Should return BAD_REQUEST status because of null param")
+    void shouldReturnBadRequestStatusCodeBecauseOfNullParam() throws Exception {
+        mockMvc.perform(get("/bank/exchange-rates"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0]").value(containsString("from")));
+    }
+
+    @Test
+    @DisplayName("Should return BAD_REQUEST status because of future date")
+    void shouldReturnBadRequestStatusCodeBecauseOfFutureDate() throws Exception {
+        mockMvc.perform(get("/bank/exchange-rates")
+                        .param("from", "EUR")
+                        .param("to", "USD")
+                        .param("date", FUTURE_TIME_STRING))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("date")));
+    }
+
+    @Test
+    @DisplayName("Should return BAD_REQUEST for invalid date format")
+    void shouldReturnBadRequestForInvalidDateFormat() throws Exception {
+        mockMvc.perform(get("/bank/exchange-rates")
+                        .param("from", "EUR")
+                        .param("to", "USD")
+                        .param("date", "invalid"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("date")));
+    }
+
+    @Test
+    @DisplayName("Should update exchange rate successfully")
+    void shouldReturnExchangeRateSuccessfully() throws Exception {
+        mockMvc.perform(post("/bank/exchange-rates/update")
+                        .param("from", "EUR")
+                        .param("to", "USD"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.currencyFrom").value("EUR"))
+                .andExpect(jsonPath("$.currencyTo").value("USD"));
+    }
+
+    @Test
+    @DisplayName("Should return BAD_REQUEST status because of null param while updating rate")
+    void shouldReturnBadRequestStatusCodeBecauseOfNullParamWhileUpdatingRate() throws Exception {
+        mockMvc.perform(post("/bank/exchange-rates/update"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0]").value(containsString("from")));
+    }
+
+    @Test
+    @DisplayName("Should return BAD_REQUEST for invalid currency while updating")
+    void shouldReturnBadRequestForInvalidCurrencyWhileUpdating() throws Exception {
+        mockMvc.perform(post("/bank/exchange-rates/update")
+                        .param("from", "XYZ")
+                        .param("to", "USD"))
+                .andExpect(status().isBadRequest());
     }
 }

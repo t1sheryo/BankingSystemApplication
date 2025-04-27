@@ -120,7 +120,7 @@ public class TransactionServiceHelper implements TransactionServiceHelperInterfa
         var exchangeRate = exchangeRateService.getExchangeRate(currency, Currency.USD, date);
         if (exchangeRate.isEmpty()) {
             log.error("Exchange rate is not found for {}/USD on {}", currency, date);
-            throw new IllegalStateException("Exchange rate is not found for " + currency + " on " + date);
+            throw new IllegalStateException("Exchange rate is not found for " + currency + "/USD on " + date);
         }
 
         BigDecimal rate = exchangeRate.get().getRate();

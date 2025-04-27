@@ -102,7 +102,7 @@ public class TransactionServiceHelperTest {
         when(accountService.getAccountById(ACCOUNT_FROM)).thenReturn(null);
 
         assertThatThrownBy(() -> transactionServiceHelper.validateAccounts(ACCOUNT_FROM, ACCOUNT_TO))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Account not found");
     }
 

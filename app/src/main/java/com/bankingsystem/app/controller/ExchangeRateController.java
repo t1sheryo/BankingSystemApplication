@@ -3,6 +3,7 @@ package com.bankingsystem.app.controller;
 import com.bankingsystem.app.entity.ExchangeRateEntity;
 import com.bankingsystem.app.enums.Currency;
 import com.bankingsystem.app.service.interfaces.ExchangeRateServiceInterface;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,24 +23,17 @@ public class ExchangeRateController {
 
     @GetMapping
     public ResponseEntity<ExchangeRateEntity> getExchangeRate(
-            @RequestParam String from,
-            @RequestParam String to,
+            @NotNull @RequestParam String from,
+            @NotNull @RequestParam String to,
             @RequestParam(required = false) LocalDate date
             )
     {
-        if (from == null || to == null) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .build();
-        }
 
         Currency fromCurrency = Currency.valueOf(from);
         Currency toCurrency = Currency.valueOf(to);
 
          if(date != null && date.isAfter(LocalDate.now())){
-             return ResponseEntity
-                     .status(HttpStatus.BAD_REQUEST)
-                     .body(null);
+             throw new IllegalArgumentException("Parameter 'date' is incorrect");
          }
 
          LocalDate targetDate = (date == null) ? LocalDate.now() : date;
@@ -53,14 +47,9 @@ public class ExchangeRateController {
 
     @PostMapping("/update")
     public ResponseEntity<ExchangeRateEntity> updateExchangeRate(
-            @RequestParam String from,
-            @RequestParam String to)
+            @NotNull @RequestParam String from,
+            @NotNull @RequestParam String to)
     {
-        if (from == null || to == null) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .build();
-        }
 
         Currency fromCurrency = Currency.valueOf(from);
         Currency toCurrency = Currency.valueOf(to);
