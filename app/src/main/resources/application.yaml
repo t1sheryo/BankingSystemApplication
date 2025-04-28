@@ -22,3 +22,6 @@ logging:
   level:
     com.bankingsystem.app.services.impl: DEBUG  # Включить логи для вашего класса
     org.springframework.web.client.RestTemplate: DEBUG  # Логировать HTTP-запросы
+security:
+  jwt:
+    secret-key: ihavecreatedthislongsecretkeybecauseidontknowfornowhowtodoitbetterway

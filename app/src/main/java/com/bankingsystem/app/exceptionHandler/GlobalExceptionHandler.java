@@ -21,9 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-// FIXME: можно сделать чтобы все ошибки тут обрабатывались,
-//  чтобы при ошибках приложение не ложилось
-
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {

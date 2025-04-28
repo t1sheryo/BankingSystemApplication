@@ -47,6 +47,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 // TODO: можно добавить больше пограничных тестов
+// FIXME : переделать тесты с security
 
 @Slf4j
 // по умолчанию эта аннотация загружает весь spring-контекст(вообще все бины)
