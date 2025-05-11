@@ -24,7 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // получая токен в виде строки делаем следуещее :
+        // получая токен в виде строки делаем следующее :
         // строка -> в decodedjwt токен
         // decodedjwt токен -> userprincipal
         // userprincipal -> userprincipalauthenticationtoken

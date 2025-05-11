@@ -16,6 +16,9 @@ public class JwtDecoder {
     public DecodedJWT decode(String token) {
         JWTVerifier verifier = JWT.require(Algorithm.HMAC256(properties.getSecretKey()))
                 .build();
+
+        // именно этот объект при доступе к защищенным эндпоинтам
+        // производит проверку, что данный токен валиден и актуален
         return verifier.verify(token);
     }
 }

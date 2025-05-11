@@ -1,0 +1,265 @@
+КЛИЕНТ
+  |
+  | POST /auth/login
+  | Body: { "username": "user", "password": "pass" }
+  v
+SPRING BOOT BACKEND
+  |
+  | --> AuthenticationManager (проверяет логин/пароль)
+  | --> UserDetailsService -> UserRepository
+  | <-- Если всё ок, создаёт JWT
+  v
+ОТВЕТ -> { token: "eyJhbGci..." }
+
+==== ДАЛЬШЕ ====
+
+КЛИЕНТ
+  |
+  | GET /api/data
+  | Headers: Authorization: Bearer eyJhbGci...
+  v
+SPRING SECURITY FILTER
+  |
+  | --> Проверка токена (JWTVerifier)
+  | --> Извлекает user details
+  | --> SecurityContextHolder.setAuthentication()
+  v
+Controller получает request с валидным пользователем
+
+так должна работать структура проекта
+
+это описание того, для чего нужны файлы для security:
+Ключевые моменты:
+
+Аутентификация в вашем проекте на Java Spring с JWT кажется работать через логин
+и последующие запросы с токеном.
+Исследования показывают, что каждый файл играет свою роль: контроллер для логина,
+сервис для загрузки данных пользователя, фильтр для проверки токена и т.д.
+Сложность в том, как файлы взаимодействуют, но похоже, что это стандартный процесс Spring Security.
+Обзор процесса аутентификации:
+Ваш проект использует Spring Security с JWT для аутентификации. Пользователь сначала логинится,
+получает токен, а затем использует его для доступа к защищённым эндпоинтам.
+
+Шаг за шагом:
+
+Логин: Пользователь отправляет запрос на /auth/login с именем и паролем.
+AuthController проверяет данные через AuthenticationManager,
+который использует CustomUserDetailService для загрузки данных пользователя.
+При успехе генерируется JWT с помощью JWTIssuer.
+Последующие запросы: Пользователь добавляет JWT в заголовок "Authorization".
+JwtAuthenticationFilter проверяет токен, декодирует его с помощью JwtDecoder,
+преобразует в UserPrincipal через JwtToPrincipalConverter
+и устанавливает аутентификацию в контексте безопасности.
+Пример:
+
+Пользователь "Джон" логинится с паролем.
+Получает токен, например, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...".
+Затем запрашивает /bank/limits, добавляя токен в заголовок, и фильтр проверяет его, позволяя доступ.
+Поддерживающие ресурсы:
+
+Подробности о Spring Security: Spring Security Reference
+Информация о JWT: Auth0 JWT Library
+Очень подробное объяснение
+Ваш проект на Java Spring с использованием Spring Security
+и JWT для аутентификации представляет собой сложную,
+но хорошо структурированную систему, где каждый файл выполняет свою роль
+в процессе проверки подлинности пользователя. Давайте разберём каждый файл,
+его назначение и то, как они работают вместе, шаг за шагом, с примерами.
+
+Обзор компонентов
+Ваш проект включает следующие ключевые файлы,
+каждый из которых играет важную роль в процессе аутентификации:
+
+AuthController.java: Обрабатывает запросы на логин.
+CustomUserDetailService.java: Загружает данные пользователя для аутентификации.
+JwtProperties.java: Хранит конфигурацию JWT, например, секретный ключ.
+JWTIssuer.java: Генерирует JWT-токены.
+JwtDecoder.java: Декодирует и проверяет JWT.
+JwtToPrincipalConverter.java: Преобразует декодированный JWT в объект пользователя.
+UserPrincipal.java: Кастомная реализация UserDetails для представления аутентифицированного пользователя.
+UserPrincipalAuthenticationToken.java: Кастомный токен аутентификации, содержащий UserPrincipal.
+JwtAuthenticationFilter.java: Фильтр для проверки JWT в запросах.
+Эти компоненты работают вместе, чтобы обеспечить безопасную аутентификацию и авторизацию,
+ используя JWT для передачи информации о пользователе.
+
+Подробное объяснение каждого файла
+1. AuthController.java
+Назначение: Этот файл содержит контроллер, который обрабатывает запросы на аутентификацию,
+в частности, эндпоинт /auth/login. Он принимает данные пользователя (имя и пароль),
+ проверяет их и возвращает JWT для дальнейшего использования.
+
+Ключевой метод: login(@RequestBody @Validated LoginRequest request)
+
+Входные данные: Объект LoginRequest, содержащий username и password,
+проверяемый аннотацией @Validated.
+Процесс:
+Создаёт UsernamePasswordAuthenticationToken с предоставленными данными.
+Вызывает authenticationManager.authenticate() для проверки.
+Устанавливает результат в SecurityContextHolder.
+Извлекает UserPrincipal из объекта аутентификации.
+Использует JWTIssuer для генерации JWT на основе userId, username и ролей.
+Возвращает LoginResponse с JWT в поле accessToken.
+Пример: Пользователь отправляет POST-запрос на /auth/login с телом
+{ "username": "john", "password": "password123" }.
+Контроллер проверяет данные, генерирует токен, например,
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", и возвращает его.
+
+2. CustomUserDetailService.java
+Назначение: Реализует интерфейс UserDetailsService из Spring Security
+ для загрузки данных пользователя на основе имени пользователя.
+ Это критически важно для процесса аутентификации.
+
+Ключевой метод: loadUserByUsername(String username)
+
+Функциональность:
+Вызывает accountService для поиска AccountEntity по имени пользователя.
+Если пользователь не найден, выбрасывает исключение
+(в данном случае IllegalStateException, хотя стандартно используется UsernameNotFoundException).
+Создаёт и возвращает объект UserPrincipal, содержащий userId, username, password и роли (как власти).
+Аннотации: Класс помечен как @Component, а с помощью Lombok (@RequiredArgsConstructor)
+автоматически генерируется конструктор для зависимости accountService.
+Пример: При запросе логина для "john", этот сервис находит пользователя в базе данных,
+например, с id=1, username="john", password=hashed("password123"), roles=["USER"],
+и возвращает UserPrincipal с этими данными.
+
+3. JwtProperties.java
+Назначение: Хранит конфигурационные свойства для JWT, такие как секретный ключ,
+загружаемые из файла конфигурации (например, .yaml).
+
+Ключевые поля:
+
+secretKey: Приватное поле для хранения секретного ключа, конфигурируемое под префиксом security.jwt.
+Функциональность: Использует @ConfigurationProperties
+для привязки свойств из конфигурации и Lombok (@Getter, @Setter) для доступа к полям.
+
+Пример: В файле application.yaml может быть указано security.jwt.secretKey: mySecretKey123,
+и этот класс обеспечит доступ к этому значению.
+
+4. JWTIssuer.java
+Назначение: Отвечает за генерацию JWT-токенов после успешной аутентификации.
+
+Ключевой метод: issue(long userId, String username, List<String> roles)
+
+Функциональность:
+Генерирует JWT с userId как субъектом, username и roles как утверждениями.
+Устанавливает время истечения, например, через день (Instant.now().plus(Duration.of(1, ChronoUnit.DAYS))).
+Подписывает токен с помощью алгоритма HMAC256 и секретного ключа из JwtProperties.
+Пример: После успешного логина для пользователя с userId=1, username="john", roles=["USER"],
+генерируется токен с утверждениями, например, sub: "1", username: "john", authorities: ["USER"].
+
+5. JwtDecoder.java
+Назначение: Декодирует и проверяет JWT-токены, извлечённые из запросов.
+
+Ключевой метод: decode(String token)
+
+Функциональность:
+Создаёт верификатор с использованием алгоритма HMAC256 и секретного ключа из JwtProperties.
+Проверяет и декодирует токен, возвращая объект DecodedJWT для дальнейшей обработки.
+Пример: При получении токена "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+этот класс проверяет подпись и возвращает декодированный объект с утверждениями.
+
+6. JwtToPrincipalConverter.java
+Назначение: Преобразует декодированный JWT в объект UserPrincipal
+для использования в контексте безопасности.
+
+Ключевые методы:
+
+convert(DecodedJWT jwt): Извлекает userId, username и власти из утверждений JWT,
+создаёт и возвращает UserPrincipal.
+extractAuthoritiesFromClaim(DecodedJWT jwt): Помогает извлечь власти (роли)
+из утверждения "authorities", возвращая список SimpleGrantedAuthority.
+Пример: Из токена извлекаются sub="1", username="john", authorities=["USER"],
+и создаётся UserPrincipal с этими данными.
+
+7. UserPrincipal.java
+Назначение: Кастомная реализация интерфейса UserDetails
+для представления аутентифицированного пользователя, включая уникальный userId,
+которого нет в стандартном User из Spring Security.
+
+Ключевые поля:
+
+userId: Уникальный идентификатор пользователя (Long).
+username: Имя пользователя (String).
+password: Пароль, игнорируемый в JSON (@JsonIgnore).
+authorities: Коллекция властей (ролей или разрешений).
+Ключевые методы: Стандартные методы UserDetails, такие как getAuthorities(), getPassword(),
+getUsername(), и методы статуса аккаунта (isAccountNonExpired() и т.д.), все возвращают true.
+
+Пример: Создаётся объект UserPrincipal(1, "john", hashed("password123"), ["USER"]) с ролями,
+преобразованными в SimpleGrantedAuthority.
+
+8. UserPrincipalAuthenticationToken.java
+Назначение: Кастомный класс, расширяющий AbstractAuthenticationToken,
+представляющий аутентифицированного пользователя в контексте безопасности после проверки JWT.
+
+Ключевые поля:
+
+principal: Объект UserPrincipal, содержащий данные пользователя.
+Ключевые методы:
+
+Конструктор: Принимает UserPrincipal, инициализирует родительский класс с властями,
+устанавливает principal и отмечает токен как аутентифицированный.
+getCredentials(): Возвращает null, так как в JWT-аутентификации не нужны учётные данные.
+getPrincipal(): Возвращает UserPrincipal для доступа к данным пользователя.
+Пример: После проверки JWT создаётся UserPrincipalAuthenticationToken с UserPrincipal,
+и он устанавливается в SecurityContextHolder.
+
+9. JwtAuthenticationFilter.java
+Назначение: Фильтр, перехватывающий запросы для проверки JWT в заголовке "Authorization"
+и установки аутентификации в контексте безопасности.
+
+Ключевой метод: doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+FilterChain filterChain)
+
+Функциональность:
+Извлекает JWT из заголовка с помощью extractTokenFromRequest.
+Декодирует и проверяет токен с помощью JwtDecoder.
+Преобразует в UserPrincipal с помощью JwtToPrincipalConverter.
+Создаёт UserPrincipalAuthenticationToken и устанавливает его в SecurityContextHolder.
+Продолжает цепочку фильтров.
+Вспомогательный метод: extractTokenFromRequest(HttpServletRequest request) извлекает токен,
+ проверяя наличие "Bearer " в заголовке, и возвращает его в Optional.
+
+Пример: При запросе с заголовком "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+фильтр извлекает токен, проверяет его, и если всё в порядке, устанавливает аутентификацию.
+
+Как файлы работают вместе: Процесс аутентификации
+Процесс аутентификации можно разделить на два этапа: логин и последующие запросы.
+
+Этап 1: Логин
+Пользователь отправляет POST-запрос на /auth/login с телом, например,
+{ "username": "john", "password": "password123" }.
+AuthController принимает запрос, создаёт UsernamePasswordAuthenticationToken("john", "password123").
+Вызывает authenticationManager.authenticate(), который делегирует проверку DaoAuthenticationProvider.
+DaoAuthenticationProvider использует CustomUserDetailService.loadUserByUsername("john"):
+CustomUserDetailService находит пользователя в базе данных,
+например, с id=1, username="john", password=hashed("password123"), roles=["USER"].
+Создаёт UserPrincipal(1, "john", hashed("password123"), ["USER"]).
+Если пароль совпадает (проверяется с помощью PasswordEncoder), возвращается аутентифицированный объект.
+AuthController устанавливает аутентификацию в SecurityContextHolder, извлекает UserPrincipal,
+и вызывает JWTIssuer.issue(1, "john", ["USER"]).
+JWTIssuer генерирует JWT, например, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", с утверждениями sub="1",
+ username="john", authorities=["USER"].
+Возвращается LoginResponse с токеном, например, { "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }.
+Этап 2: Доступ к защищённым эндпоинтам
+Пользователь отправляет запрос, например, GET /bank/limits,
+с заголовком "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...".
+JwtAuthenticationFilter перехватывает запрос:
+Извлекает токен с помощью extractTokenFromRequest.
+Использует JwtDecoder.decode() для проверки и декодирования токена.
+Если токен валиден, вызывает JwtToPrincipalConverter.convert(),
+извлекая userId="1", username="john", authorities=["USER"], и создаёт UserPrincipal.
+Создаёт UserPrincipalAuthenticationToken с UserPrincipal и устанавливает его в SecurityContextHolder.
+Запрос продолжается к контроллеру, который может получить данные пользователя
+через SecurityContextHolder.getContext().getAuthentication().getPrincipal().
+Таблица: Роли файлов в процессе
+Файл	Роль в процессе аутентификации
+AuthController.java	Обрабатывает логин, генерирует JWT
+CustomUserDetailService.java	Загружает данные пользователя для проверки
+JwtProperties.java	Хранит секретный ключ для JWT
+JWTIssuer.java	Генерирует JWT после успешного логина
+JwtDecoder.java	Декодирует и проверяет JWT в запросах
+JwtToPrincipalConverter.java	Преобразует JWT в объект пользователя
+UserPrincipal.java	Представляет аутентифицированного пользователя
+UserPrincipalAuthenticationToken.java	Хранит данные пользователя в контексте безопасности
+JwtAuthenticationFilter.java	Проверяет JWT и устанавливает аутентификацию

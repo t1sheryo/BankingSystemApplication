@@ -38,6 +38,7 @@ public class AccountServiceTest {
 
         verify(accountRepository, times(1)).findById(VALID_ACCOUNT_ID);
     }
+
     @Test
     @DisplayName("Should return null when account not found")
     void shouldReturnNullWhenAccountNotFound() {

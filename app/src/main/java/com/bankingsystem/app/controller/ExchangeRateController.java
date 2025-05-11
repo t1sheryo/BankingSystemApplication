@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.Optional;
 
+// FIXME: сделать чтобы пользователи не могли получить информацию о другом пользователе
+
 @Slf4j
 @RestController
 @RequestMapping("/bank/exchange-rates")
