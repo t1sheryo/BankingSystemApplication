@@ -1,4 +1,8 @@
-INSERT INTO accounts (id) VALUES (1), (2), (3);
+INSERT INTO accounts (id, user_username, user_password, user_role)
+VALUES
+    (1, "Timofey", "12345", "ADMIN"),
+    (1, "Ivan", "ivanloh228", "USER"),
+    (1, "Fedor", "qwerty", "ADMIN");
 # TODO: исправить добавления в accounts на объекты с новыми полями
 # FIXME: также так как необходимо чтобы пароли пользователей лежали в хешированном виде надо будет сделать так чтобы миграция добавляла их хеш. это можно сделать будет с помощью SQL-миграции, где поле password вычисляется через функцию БД
 
