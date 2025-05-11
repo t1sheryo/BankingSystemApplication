@@ -1,3 +1,4 @@
+# TODO: исправить инициализацию таблицы accounts
 CREATE TABLE accounts(
     id BIGINT AUTO_INCREMENT PRIMARY KEY
 );

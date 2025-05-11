@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+// FIXME: сделать чтобы пользователи не могли получить информацию о другом пользователе
+
 @Slf4j
 @RestController
 @RequestMapping("/bank/transactions")
