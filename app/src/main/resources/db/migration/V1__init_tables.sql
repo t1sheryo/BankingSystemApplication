@@ -1,6 +1,10 @@
-# TODO: исправить инициализацию таблицы accounts
+# FIXME : надо как изменить работу с enum чтобы она была расширяемой, не было тут явных значение enum
+
 CREATE TABLE accounts(
-    id BIGINT AUTO_INCREMENT PRIMARY KEY
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_username VARCHAR(100) NOT NULL UNIQUE,
+    user_password VARCHAR(255) NOT NULL,
+    user_role ENUM('ADMIN', 'USER') NOT NULL
 );
 
 CREATE TABLE limits (
