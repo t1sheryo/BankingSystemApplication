@@ -4,6 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+// FIXME: Добавить Spring AOP для чистоты кода
+
 // FIXME: Асинхронность:
 //    Если обновление занимает много времени, добавьте @EnableAsync и @Async:
 
