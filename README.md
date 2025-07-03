@@ -1,6 +1,3 @@
-Вот пример полного README для проекта банковской системы:
-
-```markdown
 # Banking System Application
 
 ## Описание
@@ -9,7 +6,7 @@
 
 ## Структура проекта
 
-```
+
 t1sheryo-bankingsystemapplication/
 ├── README.md
 ├── app/
@@ -24,7 +21,7 @@ t1sheryo-bankingsystemapplication/
 │   │   └── test/
 │   └── .mvn/
 └── .gitignore
-```
+
 
 ## Установка
 
