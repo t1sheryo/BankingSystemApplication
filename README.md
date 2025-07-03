@@ -1,41 +1,133 @@
-# BankingSystemApplication
+Вот пример полного README для проекта банковской системы:
 
-Для поднятия БД:
+```markdown
+# Banking System Application
 
-1) Убедиться, что установлены docker и mySQL. Проверить их наличие:
+## Описание
 
-1.1) `docker --version`
+Это приложение представляет собой банковскую систему, позволяющее пользователям управлять счетами, транзакциями и лимитами. Оно использует Spring Boot и Maven для разработки и управления зависимостями.
 
-1.2) `mysql --version`
+## Структура проекта
 
-2) Убедиться, что порт свободен. В противном случае:
+```
+t1sheryo-bankingsystemapplication/
+├── README.md
+├── app/
+│   ├── HELP.md
+│   ├── mvnw
+│   ├── mvnw.cmd
+│   ├── pom.xml
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/
+│   │   │   └── resources/
+│   │   └── test/
+│   └── .mvn/
+└── .gitignore
+```
 
-2.1) Просмотреть, какие службы работают на этом порте:  
-`netstat -aon | findstr :3306`
+## Установка
 
-2.2) Остановить службы:  
-`net stop <имя_службы>`  
-или через диспетчер задач во вкладке **details**.
+### Предварительные требования
 
-3) Создать сеть для контейнеров в docker (опционально):  
-`docker network create <название_сети>`
+1. Убедитесь, что у вас установлены следующие инструменты:
+   - [Docker](https://www.docker.com/get-started)
+   - [MySQL](https://www.mysql.com/)
 
-`!` Чтобы просмотреть список активных сетей:  `docker network ls`
+### Настройка базы данных
 
-5) Создать и запустить контейнер:  
-`docker run -d --name <имя_контейнера> -p 3306:3306 -e MYSQL_ROOT_PASSWORD=<пароль_для_суперпользователя> -e MYSQL_DATABASE=<название_БД> -e MYSQL_USER=user -e MYSQL_PASSWORD=<пароль_для_пользователя> -v mysql-data:/var/lib/mysql mysql:8.0`
+1. Проверьте установку Docker и MySQL:
+   ```bash
+   docker --version
+   mysql --version
+   ```
 
-`!` Аргумент `-e MYSQL_DATABASE=<название_БД>` говорит создать БД при инициализации контейнера.
+2. Убедитесь, что порт 3306 свободен:
+   ```bash
+   netstat -aon | findstr :3306
+   ```
 
-6) Проверить состояние контейнера:  
-`docker ps`
+3. Создайте и запустите контейнер MySQL:
+   ```bash
+   docker run -d --name banking-mysql \
+   -p 3306:3306 \
+   -e MYSQL_ROOT_PASSWORD=root_password \
+   -e MYSQL_DATABASE=banking \
+   -e MYSQL_USER=user \
+   -e MYSQL_PASSWORD=user_password \
+   -v mysql-data:/var/lib/mysql \
+   mysql:8.0
+   ```
 
-7) Перейти в редактор (мы используем bash):  
-`docker exec -it <имя_контейнера> bash`
+4. Проверьте состояние контейнера:
+   ```bash
+   docker ps
+   ```
 
-8) Чтобы подключиться к серверу БД из командной строки:  
-`mysql -u <имя_пользователя> -p <название_БД>`
+5. Подключитесь к серверу базы данных из командной строки:
+   ```bash
+   mysql -u user -p banking
+   ```
 
-9) Команды в командной строке, когда подключились к БД:  
-`SHOW TABLES;`  
-`EXIT;`
+6. Команды в командной строке базы данных:
+   ```sql
+   SHOW TABLES;
+   EXIT;
+   ```
+
+## Запуск приложения
+
+1. Перейдите в директорию `app` и запустите приложение:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+
+## Использование
+
+Приложение предоставляет следующие функции:
+
+- Получение и обновление курсов валют.
+- Управление лимитами для аккаунтов.
+- Проведение и отслеживание транзакций.
+
+### Примеры API
+
+#### Получение курса валют
+
+```http
+GET /bank/exchange-rates?from=USD&to=EUR
+```
+
+#### Обновление курса валют
+
+```http
+POST /bank/exchange-rates/update?from=USD&to=EUR
+```
+
+#### Создание лимита
+
+```http
+POST /bank/limits
+Content-Type: application/json
+
+{
+  "accountId": 1,
+  "limit": 1000.00,
+  "category": "SERVICE",
+  "limitCurrency": "USD"
+}
+```
+
+## Тестирование
+
+Для запуска тестов используйте команду:
+
+```bash
+./mvnw test
+```
+
+## Связь с разработчиком
+
+Если у вас есть вопросы или предложения, вы можете связаться с разработчиком по электронной почте: [likholap.fedor@gmail.com](mailto:likholap.fedor@gmail.com).
+```
+
