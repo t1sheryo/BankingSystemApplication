@@ -123,8 +123,4 @@ Content-Type: application/json
 ./mvnw test
 ```
 
-## Связь с разработчиком
-
-Если у вас есть вопросы или предложения, вы можете связаться с разработчиком по электронной почте: [likholap.fedor@gmail.com](mailto:likholap.fedor@gmail.com).
-```
 
